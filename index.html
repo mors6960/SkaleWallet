@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Wallet</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
+    <title>Connect MetaMask Wallet</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,11 +32,6 @@
             background-color: #aaa;
             cursor: not-allowed;
         }
-        #walletAddress {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
         #loading {
             display: none;
             margin-top: 20px;
@@ -49,10 +43,9 @@
     </style>
 </head>
 <body>
-    <h1>Connect Your Wallet</h1>
+    <h1>Connect MetaMask Wallet</h1>
     <button id="connectButton">Connect MetaMask Wallet</button>
     <div id="loading">Loading...</div>
-    <p id="walletAddress"></p>
     <p id="errorMessage"></p>
 
     <script>
@@ -62,56 +55,19 @@
 
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
-            const walletAddress = document.getElementById('walletAddress');
             const loading = document.getElementById('loading');
             const errorMessage = document.getElementById('errorMessage');
 
             connectButton.disabled = true;
             loading.style.display = 'block';
-            walletAddress.innerText = '';
             errorMessage.innerText = '';
 
             if (window.ethereum) {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const skaleChainId = 974399131; // Skale network chain ID
-                const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
-                const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
-                const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
-
                 try {
-                    await provider.send("eth_requestAccounts", []);
-                    const network = await provider.getNetwork();
-                    if (network.chainId !== skaleChainId) {
-                        try {
-                            await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                        } catch (switchError) {
-                            if (switchError.code === 4902) {
-                                await provider.send('wallet_addEthereumChain', [{
-                                    chainId: skaleChainIdHex,
-                                    chainName: 'Skale Network',
-                                    rpcUrls: [skaleRpcUrl],
-                                    nativeCurrency: {
-                                        name: 'sFUEL',
-                                        symbol: 'sFUEL',
-                                        decimals: 18
-                                    },
-                                    blockExplorerUrls: [skaleBlockExplorerUrl]
-                                }]);
-                                await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                            } else {
-                                throw new Error(`Error switching network: ${switchError.message}`);
-                            }
-                        }
-                    }
-                    const signer = provider.getSigner();
-                    const address = await signer.getAddress();
-                    const balance = await provider.getBalance(address);
-                    const sFUELBalance = ethers.utils.formatUnits(balance, 18);
-
-                    walletAddress.innerText = `Connected: ${address}, Balance: ${sFUELBalance} sFUEL`;
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    window.location.href = 'skale.html';
                 } catch (error) {
                     errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                } finally {
                     connectButton.disabled = false;
                     loading.style.display = 'none';
                 }
@@ -127,14 +83,6 @@
         }
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
-
-        window.ethereum?.on('chainChanged', async () => {
-            window.location.reload();
-        });
-
-        window.ethereum?.on('accountsChanged', async () => {
-            window.location.reload();
-        });
     </script>
 </body>
 </html>
