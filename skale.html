@@ -50,19 +50,16 @@
 </head>
 <body>
     <h1>Connect to Skale</h1>
-    <button id="connectButton">Connect to Skale Network</button>
     <div id="loading">Loading...</div>
     <p id="walletAddress"></p>
     <p id="errorMessage"></p>
 
     <script>
         async function connectToSkale() {
-            const connectButton = document.getElementById('connectButton');
-            const walletAddress = document.getElementById('walletAddress');
             const loading = document.getElementById('loading');
+            const walletAddress = document.getElementById('walletAddress');
             const errorMessage = document.getElementById('errorMessage');
 
-            connectButton.disabled = true;
             loading.style.display = 'block';
             walletAddress.innerText = '';
             errorMessage.innerText = '';
@@ -107,17 +104,15 @@
                 } catch (error) {
                     errorMessage.innerText = `Error connecting to Skale: ${error.message}`;
                 } finally {
-                    connectButton.disabled = false;
                     loading.style.display = 'none';
                 }
             } else {
                 errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
-                connectButton.disabled = false;
                 loading.style.display = 'none';
             }
         }
 
-        document.getElementById('connectButton').addEventListener('click', connectToSkale);
+        connectToSkale();
 
         window.ethereum?.on('chainChanged', async () => {
             window.location.reload();
