@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect Wallet</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk@1.1.0/dist/metamask-sdk.min.js"></script>
 </head>
 <body>
     <h1>Connect Your Wallet</h1>
@@ -13,13 +12,10 @@
     <p id="walletAddress"></p>
 
     <script>
-        const sdk = new MetaMaskSDK();
-        const { ethereum } = sdk;
-
         document.getElementById('connectButton').addEventListener('click', async () => {
-            if (ethereum) {
+            if (window.ethereum) {
                 try {
-                    const provider = new ethers.providers.Web3Provider(ethereum);
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
                     const network = await provider.getNetwork();
 
                     // Skale network configuration
@@ -70,6 +66,8 @@
             } else {
                 // MetaMask not detected
                 alert('MetaMask is not installed. Please install MetaMask to use this feature.');
+                // Optionally, you can also open the MetaMask download page
+                window.location.href = 'https://metamask.io/download.html';
             }
         });
     </script>
