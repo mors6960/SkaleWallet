@@ -30,30 +30,31 @@
 
                     if (network.chainId !== skaleChainId) {
                         try {
-                            console.log("Opening MetaMask to switch to Skale network...");
-                            // Prompt user to switch to Skale network
+                            console.log("Prompting user to switch to Skale network...");
+
+                            // Attempt to switch to Skale network
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                            
+                            console.log("Switched to Skale network");
                         } catch (switchError) {
                             if (switchError.code === 4902) {
-                                // The Skale network is not added, so add it
+                                // Network not added; prompt user to add the network
                                 console.log("Adding Skale network to MetaMask...");
-                                try {
-                                    await provider.send('wallet_addEthereumChain', [{
-                                        chainId: skaleChainIdHex,
-                                        chainName: 'Skale Network',
-                                        rpcUrls: [skaleRpcUrl],
-                                        nativeCurrency: {
-                                            name: 'sFUEL',
-                                            symbol: 'sFUEL',
-                                            decimals: 18
-                                        },
-                                        blockExplorerUrls: [skaleBlockExplorerUrl]
-                                    }]);
-                                    // After adding, switch to the Skale network
-                                    await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                                } catch (addError) {
-                                    console.error("Error adding Skale network:", addError);
-                                }
+                                await provider.send('wallet_addEthereumChain', [{
+                                    chainId: skaleChainIdHex,
+                                    chainName: 'Skale Network',
+                                    rpcUrls: [skaleRpcUrl],
+                                    nativeCurrency: {
+                                        name: 'sFUEL',
+                                        symbol: 'sFUEL',
+                                        decimals: 18
+                                    },
+                                    blockExplorerUrls: [skaleBlockExplorerUrl]
+                                }]);
+
+                                // Switch to Skale network after adding it
+                                await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                                console.log("Switched to Skale network");
                             } else {
                                 console.error("Error switching network:", switchError);
                             }
