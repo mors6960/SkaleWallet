@@ -5,11 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect Wallet</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        #connectButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #connectButton:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        #walletAddress {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Connect Your Wallet</h1>
     <button id="connectButton">Connect MetaMask Wallet</button>
+    <div id="loading">Loading...</div>
     <p id="walletAddress"></p>
+    <p id="errorMessage"></p>
 
     <script>
         function isMobile() {
@@ -17,6 +61,16 @@
         }
 
         async function connectWallet() {
+            const connectButton = document.getElementById('connectButton');
+            const walletAddress = document.getElementById('walletAddress');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+
+            connectButton.disabled = true;
+            loading.style.display = 'block';
+            walletAddress.innerText = '';
+            errorMessage.innerText = '';
+
             if (window.ethereum) {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const skaleChainId = 974399131; // Skale network chain ID
@@ -45,25 +99,30 @@
                                 }]);
                                 await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
                             } else {
-                                console.error("Error switching network:", switchError);
+                                throw new Error(`Error switching network: ${switchError.message}`);
                             }
                         }
                     }
                     const signer = provider.getSigner();
                     const address = await signer.getAddress();
-                    document.getElementById('walletAddress').innerText = `Connected: ${address}`;
                     const balance = await provider.getBalance(address);
                     const sFUELBalance = ethers.utils.formatUnits(balance, 18);
-                    document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
+
+                    walletAddress.innerText = `Connected: ${address}, Balance: ${sFUELBalance} sFUEL`;
                 } catch (error) {
-                    console.error("Error connecting wallet:", error);
+                    errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+                } finally {
+                    connectButton.disabled = false;
+                    loading.style.display = 'none';
                 }
             } else if (isMobile()) {
                 const dappUrl = encodeURIComponent(window.location.href);
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
                 window.location.href = metaMaskDeepLink;
             } else {
-                alert('MetaMask is not installed. Please install MetaMask to continue.');
+                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
+                connectButton.disabled = false;
+                loading.style.display = 'none';
             }
         }
 
