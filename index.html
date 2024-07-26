@@ -12,6 +12,10 @@
     <p id="walletAddress"></p>
 
     <script>
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
         async function connectWallet() {
             if (window.ethereum) {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -71,10 +75,13 @@
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
-            } else {
+            } else if (isMobile()) {
                 // MetaMask not detected, attempt to open MetaMask app
-                const metaMaskDeepLink = 'https://metamask.app.link/';
+                const dappUrl = encodeURIComponent(window.location.href); // Encode current URL
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/`;
                 window.location.href = metaMaskDeepLink;
+            } else {
+                alert('MetaMask is not installed. Please install MetaMask to continue.');
             }
         }
 
