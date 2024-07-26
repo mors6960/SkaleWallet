@@ -28,7 +28,7 @@
                     const network = await provider.getNetwork();
                     if (network.chainId !== skaleChainId) {
                         try {
-                            // Add the Skale network to MetaMask
+                            // Add and switch to the Skale network
                             await provider.send('wallet_addEthereumChain', [{
                                 chainId: skaleChainIdHex,
                                 chainName: 'Skale Network',
@@ -41,11 +41,13 @@
                                 blockExplorerUrls: [skaleBlockExplorerUrl]
                             }]);
 
-                            // Switch to the Skale network
+                            // Optionally, you might want to switch to the Skale network right after adding it
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
                         } catch (addError) {
                             console.error("Error adding or switching network:", addError);
                         }
+                    } else {
+                        console.log("Already on the Skale network");
                     }
 
                     // Display connected account and balance
@@ -62,9 +64,9 @@
                 }
             } else {
                 // MetaMask not detected, attempt to open MetaMask app
-                const metaMaskDeepLink = 'metamask://';
+                const metaMaskDeepLink = 'https://metamask.app.link/';
                 window.location.href = metaMaskDeepLink;
-                
+
                 // Optionally inform the user to install MetaMask if needed
                 alert('MetaMask is not installed. Please install MetaMask and try again.');
             }
@@ -84,3 +86,5 @@
     </script>
 </body>
 </html>
+
+
