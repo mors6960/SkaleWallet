@@ -25,7 +25,8 @@
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                alert("MetaMask is not installed. Please install MetaMask.");
+                // Create a MetaMask deep link
+                window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
             }
         });
     </script>
