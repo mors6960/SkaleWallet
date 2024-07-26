@@ -19,26 +19,33 @@
                     const network = await provider.getNetwork();
 
                     // Skale network configuration
-                    const skaleChainId = 1442; // Replace with the actual chain ID for Skale network if different
+                    const skaleChainId = 974399131; // Replace with your Skale network chain ID if different
                     const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
                     const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
-                    
+
+                    // Convert chain ID to hexadecimal format
+                    const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
+
                     // Check if MetaMask is connected to the correct Skale network
                     if (network.chainId !== skaleChainId) {
-                        await provider.send('wallet_addEthereumChain', [{
-                            chainId: `0x${skaleChainId.toString(16)}`, // Chain ID in hex format
-                            chainName: 'Skale Network',
-                            rpcUrls: [skaleRpcUrl],
-                            nativeCurrency: {
-                                name: 'SKL',
-                                symbol: 'SKL',
-                                decimals: 18
-                            },
-                            blockExplorerUrls: [skaleBlockExplorerUrl]
-                        }]);
-                        
-                        // After adding the network, switch to it
-                        await provider.send('wallet_switchEthereumChain', [{ chainId: `0x${skaleChainId.toString(16)}` }]);
+                        try {
+                            await provider.send('wallet_addEthereumChain', [{
+                                chainId: skaleChainIdHex, // Chain ID in hex format
+                                chainName: 'Skale Network', // Update to your Skale network name
+                                rpcUrls: [skaleRpcUrl],
+                                nativeCurrency: {
+                                    name: 'sFUEL', // Name of the native currency
+                                    symbol: 'sFUEL', // Symbol of the native currency
+                                    decimals: 18 // Adjust if needed
+                                },
+                                blockExplorerUrls: [skaleBlockExplorerUrl]
+                            }]);
+
+                            // After adding the network, switch to it
+                            await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                        } catch (addError) {
+                            console.error("Error adding or switching network:", addError);
+                        }
                     }
                     
                     // Request account access
@@ -46,16 +53,18 @@
                     const signer = provider.getSigner();
                     const address = await signer.getAddress();
                     document.getElementById('walletAddress').innerText = `Connected: ${address}`;
+
+                    // Example: Fetch and display the sFUEL balance
+                    const balance = await provider.getBalance(address);
+                    // Convert balance from wei to sFUEL
+                    const sFUELBalance = ethers.utils.formatUnits(balance, 18);
+                    document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
+
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                try {
-                    // Redirect to MetaMask deep link if MetaMask is not found
-                    // window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
-                } catch (error) {
-                    console.error("Error redirecting to MetaMask:", error);
-                }
+                alert("MetaMask is not installed. Please install MetaMask.");
             }
         });
     </script>
