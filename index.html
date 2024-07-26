@@ -29,6 +29,7 @@
                     // Check if MetaMask is connected to the correct Skale network
                     if (network.chainId !== skaleChainId) {
                         try {
+                            // Add the Skale network to MetaMask
                             await provider.send('wallet_addEthereumChain', [{
                                 chainId: skaleChainIdHex, // Chain ID in hex format
                                 chainName: 'Skale Network', // Update to your Skale network name
@@ -41,7 +42,7 @@
                                 blockExplorerUrls: [skaleBlockExplorerUrl]
                             }]);
 
-                            // After adding the network, switch to it
+                            // Switch to the Skale network
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
                         } catch (addError) {
                             console.error("Error adding or switching network:", addError);
@@ -63,13 +64,17 @@
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
-            }  else {
+            } else {
                 // MetaMask not detected, use deep linking
                 const metaMaskDeepLink = 'https://metamask.app.link/';
+                const fallbackURL = 'https://metamask.io/download.html';
+
+                // Try to open MetaMask
                 window.location.href = metaMaskDeepLink;
-                // Optionally, fallback to download page if needed
+
+                // Redirect to installation page if needed
                 setTimeout(() => {
-                    window.location.href = 'https://metamask.io/download.html';
+                    window.location.href = fallbackURL;
                 }, 1000); // Adjust timeout as needed
             }
         });
