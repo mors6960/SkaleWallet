@@ -15,6 +15,7 @@
         document.getElementById('connectButton').addEventListener('click', async () => {
             if (window.ethereum) {
                 try {
+                    // MetaMask is installed
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
                     const network = await provider.getNetwork();
 
@@ -29,38 +30,53 @@
                     // Check if MetaMask is connected to the correct Skale network
                     if (network.chainId !== skaleChainId) {
                         try {
-                            // Open MetaMask app to switch network
-                            const metaMaskDeepLink = `https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/`;
-                            window.location.href = metaMaskDeepLink;
-                            
-                            // Inform user to switch networks manually if needed
-                            alert("Please open the MetaMask app and switch to the Skale network. If MetaMask does not open, ensure it is installed and try again.");
+                            await provider.send('wallet_addEthereumChain', [{
+                                chainId: skaleChainIdHex, // Chain ID in hex format
+                                chainName: 'Skale Network', // Update to your Skale network name
+                                rpcUrls: [skaleRpcUrl],
+                                nativeCurrency: {
+                                    name: 'sFUEL', // Name of the native currency
+                                    symbol: 'sFUEL', // Symbol of the native currency
+                                    decimals: 18 // Adjust if needed
+                                },
+                                blockExplorerUrls: [skaleBlockExplorerUrl]
+                            }]);
+
+                            // After adding the network, switch to it
+                            await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
                         } catch (addError) {
                             console.error("Error adding or switching network:", addError);
                         }
-                    } else {
-                        // Request account access
-                        await provider.send("eth_requestAccounts", []);
-                        const signer = provider.getSigner();
-                        const address = await signer.getAddress();
-                        document.getElementById('walletAddress').innerText = `Connected: ${address}`;
-
-                        // Example: Fetch and display the sFUEL balance
-                        const balance = await provider.getBalance(address);
-                        // Convert balance from wei to sFUEL
-                        const sFUELBalance = ethers.utils.formatUnits(balance, 18);
-                        document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
                     }
+
+                    // Request account access
+                    await provider.send("eth_requestAccounts", []);
+                    const signer = provider.getSigner();
+                    const address = await signer.getAddress();
+                    document.getElementById('walletAddress').innerText = `Connected: ${address}`;
+
+                    // Example: Fetch and display the sFUEL balance
+                    const balance = await provider.getBalance(address);
+                    // Convert balance from wei to sFUEL
+                    const sFUELBalance = ethers.utils.formatUnits(balance, 18);
+                    document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
+
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                // MetaMask deep link for mobile if MetaMask is not found
-                const metaMaskDeepLink = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
+                // MetaMask not detected, try to open MetaMask directly
+                // MetaMask deep link URL to open the app (no specific URL to detect installation)
+                const metaMaskDeepLink = 'metamask://';
+                const fallbackURL = 'https://metamask.io/download.html';
+
+                // Try to open MetaMask
                 window.location.href = metaMaskDeepLink;
-                
-                // Inform user to install MetaMask
-                alert("MetaMask is not installed. Please install MetaMask and try again.");
+
+                // Redirect to installation page if MetaMask is not installed
+                setTimeout(() => {
+                    window.location.href = fallbackURL;
+                }, 1000); // Adjust timeout as needed to allow MetaMask to open
             }
         });
     </script>
