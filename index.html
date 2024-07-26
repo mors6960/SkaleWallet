@@ -47,7 +47,7 @@
                             console.error("Error adding or switching network:", addError);
                         }
                     }
-                    
+
                     // Request account access
                     await provider.send("eth_requestAccounts", []);
                     const signer = provider.getSigner();
@@ -64,7 +64,9 @@
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                alert("MetaMask is not installed. Please install MetaMask.");
+                // MetaMask deep link for mobile
+                const metamaskDeepLink = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
+                window.location.href = metamaskDeepLink;
             }
         });
     </script>
