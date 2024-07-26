@@ -64,9 +64,14 @@
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                // MetaMask deep link for mobile
-                const metamaskDeepLink = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
-                window.location.href = metamaskDeepLink;
+                // Attempt to open MetaMask directly on mobile
+                const metaMaskDeepLink = 'metamask://';
+                window.location.href = metaMaskDeepLink;
+                
+                // Fallback to redirect if MetaMask deep link is not supported
+                setTimeout(() => {
+                    window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
+                }, 2000); // Adjust the timeout as needed
             }
         });
     </script>
