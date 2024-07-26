@@ -16,7 +16,6 @@
             if (window.ethereum) {
                 try {
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const network = await provider.getNetwork();
 
                     // Skale network configuration
                     const skaleChainId = 974399131; // Replace with your Skale network chain ID if different
@@ -27,6 +26,7 @@
                     const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
 
                     // Check if MetaMask is connected to the correct Skale network
+                    const network = await provider.getNetwork();
                     if (network.chainId !== skaleChainId) {
                         try {
                             // Add the Skale network to MetaMask
@@ -65,17 +65,14 @@
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                // MetaMask not detected, use deep linking
+                // MetaMask not detected, try to open MetaMask app directly
                 const metaMaskDeepLink = 'https://metamask.app.link/';
-                const fallbackURL = 'https://metamask.io/download.html';
 
-                // Try to open MetaMask
+                // Attempt to open MetaMask app
                 window.location.href = metaMaskDeepLink;
 
-                // Redirect to installation page if needed
-                setTimeout(() => {
-                    window.location.href = fallbackURL;
-                }, 1000); // Adjust timeout as needed
+                // Optionally, you can inform the user to install MetaMask if it’s not detected
+                alert('MetaMask is not installed. Please install MetaMask and try again.');
             }
         });
     </script>
