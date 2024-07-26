@@ -16,6 +16,7 @@
             document.getElementById('connectButton').addEventListener('click', async () => {
                 if (window.ethereum) {
                     try {
+                        const metaMaskDeepLink = 'https://metamask.app.link/';
                         const provider = new ethers.providers.Web3Provider(window.ethereum);
 
                         // Skale network configuration
@@ -67,8 +68,7 @@
                     }
                 } else {
                     // MetaMask not detected, attempt to open the MetaMask app or redirect
-                    const metaMaskDeepLink = 'https://metamask.app.link/';
-
+                   
                     // Try to open MetaMask
                     window.location.href = metaMaskDeepLink;
 
