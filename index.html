@@ -24,11 +24,15 @@
                     // Request account access
                     await provider.send("eth_requestAccounts", []);
 
-                    // Check if MetaMask is connected to the correct Skale network
+                    // Check the current network
                     const network = await provider.getNetwork();
+                    console.log("Current network chainId:", network.chainId);
+
                     if (network.chainId !== skaleChainId) {
                         try {
-                            // Add and switch to the Skale network
+                            console.log("Attempting to switch to Skale network...");
+
+                            // Add Skale network to MetaMask
                             await provider.send('wallet_addEthereumChain', [{
                                 chainId: skaleChainIdHex,
                                 chainName: 'Skale Network',
@@ -41,8 +45,10 @@
                                 blockExplorerUrls: [skaleBlockExplorerUrl]
                             }]);
 
-                            // Optionally, you might want to switch to the Skale network right after adding it
+                            // Switch to Skale network
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+
+                            console.log("Switched to Skale network");
                         } catch (addError) {
                             console.error("Error adding or switching network:", addError);
                         }
@@ -67,8 +73,7 @@
                 const metaMaskDeepLink = 'https://metamask.app.link/';
                 window.location.href = metaMaskDeepLink;
 
-                // Optionally inform the user to install MetaMask if needed
-                alert('MetaMask is not installed. Please install MetaMask and try again.');
+          
             }
         }
 
