@@ -67,12 +67,55 @@
             } else {
                 // MetaMask not detected, try to open MetaMask app directly
                 const metaMaskDeepLink = 'https://metamask.app.link/';
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
 
+// Skale network configuration
+const skaleChainId = 974399131; // Replace with your Skale network chain ID if different
+const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
+const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
+
+// Convert chain ID to hexadecimal format
+const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
+
+// Check if MetaMask is connected to the correct Skale network
+const network = await provider.getNetwork();
+if (network.chainId !== skaleChainId) {
+    try {
+        // Add the Skale network to MetaMask
+        await provider.send('wallet_addEthereumChain', [{
+            chainId: skaleChainIdHex, // Chain ID in hex format
+            chainName: 'Skale Network', // Update to your Skale network name
+            rpcUrls: [skaleRpcUrl],
+            nativeCurrency: {
+                name: 'sFUEL', // Name of the native currency
+                symbol: 'sFUEL', // Symbol of the native currency
+                decimals: 18 // Adjust if needed
+            },
+            blockExplorerUrls: [skaleBlockExplorerUrl]
+        }]);
+
+        // Switch to the Skale network
+        await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+    } catch (addError) {
+        console.error("Error adding or switching network:", addError);
+    }
+}
+
+// Request account access
+await provider.send("eth_requestAccounts", []);
+const signer = provider.getSigner();
+const address = await signer.getAddress();
+document.getElementById('walletAddress').innerText = `Connected: ${address}`;
+
+// Example: Fetch and display the sFUEL balance
+const balance = await provider.getBalance(address);
+// Convert balance from wei to sFUEL
+const sFUELBalance = ethers.utils.formatUnits(balance, 18);
+document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
                 // Attempt to open MetaMask app
                 window.location.href = metaMaskDeepLink;
 
-                // Optionally, you can inform the user to install MetaMask if it’s not detected
-                alert('MetaMask is not installed. Please install MetaMask and try again.');
+               
             }
         });
     </script>
