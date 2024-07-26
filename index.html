@@ -65,10 +65,10 @@
                 }
             } else {
                 // Attempt to open MetaMask directly on mobile
-                const metaMaskDeepLink = 'metamask://';
+                const metaMaskDeepLink = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
                 window.location.href = metaMaskDeepLink;
                 
-                // Fallback to redirect if MetaMask deep link is not supported
+                // Fallback to a different URL if MetaMask deep link is not supported
                 setTimeout(() => {
                     window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
                 }, 2000); // Adjust the timeout as needed
