@@ -25,21 +25,13 @@
                 const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
 
                 try {
-                    // Request account access
                     await provider.send("eth_requestAccounts", []);
-
-                    // Check the current network
                     const network = await provider.getNetwork();
-                    console.log("Current network chainId:", network.chainId);
-
                     if (network.chainId !== skaleChainId) {
                         try {
-                            console.log("Prompting user to switch to Skale network...");
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                            console.log("Switched to Skale network");
                         } catch (switchError) {
                             if (switchError.code === 4902) {
-                                console.log("Adding Skale network to MetaMask...");
                                 await provider.send('wallet_addEthereumChain', [{
                                     chainId: skaleChainIdHex,
                                     chainName: 'Skale Network',
@@ -51,34 +43,24 @@
                                     },
                                     blockExplorerUrls: [skaleBlockExplorerUrl]
                                 }]);
-
-                                // Switch to Skale network after adding it
                                 await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                                console.log("Switched to Skale network");
                             } else {
                                 console.error("Error switching network:", switchError);
                             }
                         }
-                    } else {
-                        console.log("Already on the Skale network");
                     }
-
-                    // Display connected account and balance
                     const signer = provider.getSigner();
                     const address = await signer.getAddress();
                     document.getElementById('walletAddress').innerText = `Connected: ${address}`;
-
                     const balance = await provider.getBalance(address);
                     const sFUELBalance = ethers.utils.formatUnits(balance, 18);
                     document.getElementById('walletAddress').innerText += `, Balance: ${sFUELBalance} sFUEL`;
-
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
             } else if (isMobile()) {
-                // MetaMask not detected, attempt to open MetaMask app
-                const dappUrl = encodeURIComponent(window.location.href); // Encode current URL
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/`;
+                const dappUrl = encodeURIComponent(window.location.href);
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
                 window.location.href = metaMaskDeepLink;
             } else {
                 alert('MetaMask is not installed. Please install MetaMask to continue.');
@@ -87,15 +69,11 @@
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
 
-        // Listen for MetaMask network change events
         window.ethereum?.on('chainChanged', async () => {
-            // Reload the page to ensure the application updates correctly
             window.location.reload();
         });
 
-        // Listen for MetaMask account change events
         window.ethereum?.on('accountsChanged', async () => {
-            // Reload the page to ensure the application updates correctly
             window.location.reload();
         });
     </script>
