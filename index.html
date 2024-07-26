@@ -16,17 +16,46 @@
             if (window.ethereum) {
                 try {
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const network = await provider.getNetwork();
+
+                    // Skale network configuration
+                    const skaleChainId = 1442; // Replace with the actual chain ID for Skale network if different
+                    const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
+                    const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
+                    
+                    // Check if MetaMask is connected to the correct Skale network
+                    if (network.chainId !== skaleChainId) {
+                        await provider.send('wallet_addEthereumChain', [{
+                            chainId: `0x${skaleChainId.toString(16)}`, // Chain ID in hex format
+                            chainName: 'Skale Network',
+                            rpcUrls: [skaleRpcUrl],
+                            nativeCurrency: {
+                                name: 'SKL',
+                                symbol: 'SKL',
+                                decimals: 18
+                            },
+                            blockExplorerUrls: [skaleBlockExplorerUrl]
+                        }]);
+                        
+                        // After adding the network, switch to it
+                        await provider.send('wallet_switchEthereumChain', [{ chainId: `0x${skaleChainId.toString(16)}` }]);
+                    }
+                    
+                    // Request account access
                     await provider.send("eth_requestAccounts", []);
                     const signer = provider.getSigner();
                     const address = await signer.getAddress();
                     document.getElementById('walletAddress').innerText = `Connected: ${address}`;
-                    // Optionally send address to Telegram bot or backend
                 } catch (error) {
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                // Create a MetaMask deep link
-                window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
+                try {
+                    // Redirect to MetaMask deep link if MetaMask is not found
+                    // window.location.href = 'https://metamask.app.link/dapp/https://mors6960.github.io/SkaleWallet/';
+                } catch (error) {
+                    console.error("Error redirecting to MetaMask:", error);
+                }
             }
         });
     </script>
