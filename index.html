@@ -72,9 +72,9 @@
                     loading.style.display = 'none';
                 }
             } else if (isMobile()) {
-                // const dappUrl = encodeURIComponent(window.location.href);
-                // const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                // window.location.href = metaMaskDeepLink;
+                const dappUrl = encodeURIComponent(window.location.href);
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                window.location.href = metaMaskDeepLink;
             } else {
                 errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
                 connectButton.disabled = false;
