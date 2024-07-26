@@ -34,7 +34,6 @@
 
                             // Attempt to switch to Skale network
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
-                            
                             console.log("Switched to Skale network");
                         } catch (switchError) {
                             if (switchError.code === 4902) {
@@ -90,7 +89,10 @@
             }
         }
 
-        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        document.getElementById('connectButton').addEventListener('click', async () => {
+            // Open MetaMask and initiate network switch
+            await connectWallet();
+        });
 
         // Listen for MetaMask network change events
         window.ethereum?.on('chainChanged', async () => {
