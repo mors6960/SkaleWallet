@@ -14,13 +14,13 @@
     <script>
         async function connectWallet() {
             if (window.ethereum) {
-                try {
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const skaleChainId = 974399131; // Skale network chain ID
-                    const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
-                    const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
-                    const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const skaleChainId = 974399131; // Skale network chain ID
+                const skaleRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet';
+                const skaleBlockExplorerUrl = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
+                const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
 
+                try {
                     // Request account access
                     await provider.send("eth_requestAccounts", []);
 
@@ -31,13 +31,10 @@
                     if (network.chainId !== skaleChainId) {
                         try {
                             console.log("Prompting user to switch to Skale network...");
-
-                            // Attempt to switch to Skale network
                             await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
                             console.log("Switched to Skale network");
                         } catch (switchError) {
                             if (switchError.code === 4902) {
-                                // Network not added; prompt user to add the network
                                 console.log("Adding Skale network to MetaMask...");
                                 await provider.send('wallet_addEthereumChain', [{
                                     chainId: skaleChainIdHex,
@@ -78,30 +75,21 @@
                 // MetaMask not detected, attempt to open MetaMask app
                 const metaMaskDeepLink = 'https://metamask.app.link/';
                 window.location.href = metaMaskDeepLink;
-
-                // Optionally, set a delay to retry the network switch
-                setTimeout(async () => {
-                    // Check if MetaMask is available and perform network switch
-                    if (window.ethereum) {
-                        await connectWallet();
-                    }
-                }, 5000); // Adjust the timeout as needed
             }
         }
 
-        document.getElementById('connectButton').addEventListener('click', async () => {
-            // Open MetaMask and initiate network switch
-            await connectWallet();
-        });
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
 
         // Listen for MetaMask network change events
         window.ethereum?.on('chainChanged', async () => {
-            await connectWallet();
+            // Reload the page to ensure the application updates correctly
+            window.location.reload();
         });
 
         // Listen for MetaMask account change events
         window.ethereum?.on('accountsChanged', async () => {
-            await connectWallet();
+            // Reload the page to ensure the application updates correctly
+            window.location.reload();
         });
     </script>
 </body>
