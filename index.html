@@ -65,18 +65,17 @@
                     console.error("Error connecting wallet:", error);
                 }
             } else {
-                // MetaMask not detected, try to open MetaMask directly
-                // MetaMask deep link URL to open the app (no specific URL to detect installation)
+                // MetaMask not detected, attempt to open MetaMask
                 const metaMaskDeepLink = 'metamask://';
-                const fallbackURL = 'https://metamask.io/download.html';
 
-                // Try to open MetaMask
+                // Open MetaMask and handle case where it might not open
                 window.location.href = metaMaskDeepLink;
 
-                // Redirect to installation page if MetaMask is not installed
+                // Use a timeout to redirect if MetaMask does not open
                 setTimeout(() => {
-                    window.location.href = fallbackURL;
-                }, 1000); // Adjust timeout as needed to allow MetaMask to open
+                    // Fallback URL: MetaMask's installation page or app store
+                    window.location.href = 'https://metamask.io/download.html';
+                }, 15000); // Adjust timeout as needed
             }
         });
     </script>
