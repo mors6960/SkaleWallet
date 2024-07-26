@@ -79,6 +79,14 @@
                 // MetaMask not detected, attempt to open MetaMask app
                 const metaMaskDeepLink = 'https://metamask.app.link/';
                 window.location.href = metaMaskDeepLink;
+
+                // Optionally, set a delay to retry the network switch
+                setTimeout(async () => {
+                    // Check if MetaMask is available and perform network switch
+                    if (window.ethereum) {
+                        await connectWallet();
+                    }
+                }, 5000); // Adjust the timeout as needed
             }
         }
 
