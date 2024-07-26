@@ -60,7 +60,7 @@
                 }
             } else if (isMobile()) {
                 const dappUrl = encodeURIComponent(window.location.href);
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
                 window.location.href = metaMaskDeepLink;
             } else {
                 alert('MetaMask is not installed. Please install MetaMask to continue.');
