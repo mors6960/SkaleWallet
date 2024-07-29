@@ -59,6 +59,9 @@
             errorMessage.innerText = '';
 
             if (typeof window.ethereum !== 'undefined') {
+                if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                        window.location.href = 'https://metamask.app.link';
+                    }
                 const skaleNetwork = {
                     chainId: '0x5d456c62', // Hexadecimal chain ID
                     chainName: 'Calypso Hub',
@@ -82,9 +85,7 @@
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     
                     // Redirect to MetaMask app deep link (only for mobile)
-                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                        window.location.href = 'https://metamask.app.link';
-                    }
+                   
 
                     // Success
                     loading.style.display = 'none';
