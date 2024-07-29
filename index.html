@@ -1,92 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Connect MetaMask Wallet</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        #connectButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        #connectButton:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-        #loading {
-            display: none;
-            margin-top: 20px;
-        }
-        #errorMessage {
-            color: red;
-            margin-top: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+      }
+      h1 {
+        color: #333;
+      }
+      #connectButton {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      #connectButton:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+      }
+      #loading {
+        display: none;
+        margin-top: 20px;
+      }
+      #errorMessage {
+        color: red;
+        margin-top: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Connect MetaMask Wallet</h1>
     <button id="connectButton">Connect MetaMask Wallet</button>
     <div id="loading">Loading...</div>
     <p id="errorMessage"></p>
 
     <script>
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      function isMobile() {
+        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      }
+
+      const defaultChainId = "0x3a14269b"; // Default chain ID
+      const defaultRpcUrl = "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"; // Default RPC URL
+      const defaultBlockExplorerUrls = "https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/";
+      const defaultCurrentSymbol = "SKL";
+      const defaultChainName = "SKALE";
+
+      async function connectWallet() {
+        const connectButton = document.getElementById("connectButton");
+        const loading = document.getElementById("loading");
+        const errorMessage = document.getElementById("errorMessage");
+
+        connectButton.disabled = true;
+        loading.style.display = "block";
+        errorMessage.innerText = "";
+
+        if (isMobile()) {
+          try {
+            // Simple deep link to MetaMask
+            const metaMaskDeepLink = "https://metamask.app.link";
+            window.location.href = metaMaskDeepLink;
+            window.location.href = "skale.html"
+            
+
+            // You may want to handle a timeout to redirect if MetaMask is not installed
+            setTimeout(() => {
+              errorMessage.innerText =
+                "MetaMask not detected. Please install MetaMask on your device.";
+              connectButton.disabled = false;
+              loading.style.display = "none";
+            }, 5000);
+          } catch (error) {
+            errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+            connectButton.disabled = false;
+            loading.style.display = "none";
+          }
+        } else {
+          errorMessage.innerText =
+            "This feature is only available on mobile devices.";
+          connectButton.disabled = false;
+          loading.style.display = "none";
         }
+      }
 
-        async function connectWallet() {
-            const connectButton = document.getElementById('connectButton');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
-
-            connectButton.disabled = true;
-            loading.style.display = 'block';
-            errorMessage.innerText = '';
-
-            if (isMobile()) {
-                try {
-                    // Simple deep link to MetaMask
-                    const metaMaskDeepLink = 'https://metamask.app.link';
-                    window.location.href = metaMaskDeepLink;
-
-                    // You may want to handle a timeout to redirect if MetaMask is not installed
-                    setTimeout(() => {
-                        errorMessage.innerText = 'MetaMask not detected. Please install MetaMask on your device.';
-                        connectButton.disabled = false;
-                        loading.style.display = 'none';
-                    }, 5000);
-                } catch (error) {
-                    errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                    connectButton.disabled = false;
-                    loading.style.display = 'none';
-                }
-            } else {
-                errorMessage.innerText = 'This feature is only available on mobile devices.';
-                connectButton.disabled = false;
-                loading.style.display = 'none';
-            }
-        }
-
-        document.getElementById('connectButton').addEventListener('click', connectWallet);
+      document
+        .getElementById("connectButton")
+        .addEventListener("click", connectWallet);
     </script>
-</body>
+  </body>
 </html>
