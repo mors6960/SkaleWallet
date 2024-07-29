@@ -50,10 +50,12 @@
 
     <script>
         async function deepLinkToMetaMask() {
-            // Attempt to open MetaMask using a deep link
-            window.location.href = 'https://metamask.app.link';
-            // Wait for a short period to allow MetaMask to open
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Open MetaMask app deep link
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                window.location.href = 'metamask://';
+                // Allow some time for the app to open
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
 
         async function connectWallet() {
@@ -65,13 +67,16 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            // Attempt to deep link to MetaMask
+            // Open MetaMask app deep link
             await deepLinkToMetaMask();
 
-            // Check if MetaMask is available after attempting deep link
+            // Log MetaMask status
+            console.log('MetaMask detection:', typeof window.ethereum !== 'undefined');
+
             if (typeof window.ethereum !== 'undefined') {
+                // MetaMask is detected
                 const skaleNetwork = {
-                    chainId: '0x5d456c62', // Hexadecimal chain ID
+                    chainId: '0x5d456c62', // Ensure this is correct for Skale
                     chainName: 'Calypso Hub',
                     nativeCurrency: {
                         name: 'SKL',
@@ -96,7 +101,7 @@
                     loading.style.display = 'none';
                     errorMessage.innerText = 'Wallet connected successfully!';
                 } catch (error) {
-                    // Handle errors
+                    console.error('Error connecting wallet:', error); // Log error for debugging
                     errorMessage.innerText = `Error connecting wallet: ${error.message}`;
                 } finally {
                     connectButton.disabled = false;
