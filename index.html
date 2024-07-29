@@ -1,105 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect MetaMask</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        #loading {
-            display: none;
-            margin-top: 20px;
-        }
-        #errorMessage {
-            color: red;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMask Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    #status {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <button id="connectButton">Connect MetaMask</button>
-    <div id="loading">Loading...</div>
-    <p id="errorMessage"></p>
+  <h1>MetaMask Integration</h1>
+  <div id="status">Status: Not Connected</div>
+  <button onclick="connect()">Connect</button>
+  <button onclick="addChain()">Add Skale Chain</button>
 
-    <script>
-        const skaleNetwork = {
-            chainId: '0x3a14269b', // Replace with the chainId of the network you want to add
-            chainName: 'Calypso Hub', // Replace with the network name
-            rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'], // Replace with the RPC URL
-            nativeCurrency: {
-                name: 'SKALE',
-                symbol: 'SKL',
-                decimals: 18
-            },
-            blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/'] 
-        };
+  <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk@latest/dist/metamask-sdk.umd.min.js"></script>
+  <script>
+    let provider;
+    const skaleChainId = '0x5d456c62'; // Skale chain ID (hexadecimal)
+    const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'; // Skale RPC URL
+    const skaleBlockExplorerUrls = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
+    const skaleCurrentSymbol = 'SKL'; // Skale native currency symbol
+    const skaleChainName = 'Calypso Hub'; // Skale chain name
+    let accounts;
 
-        async function connectMetaMask() {
-            const connectButton = document.getElementById('connectButton');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
+    async function initializeSDK() {
+      try {
+        const sdk = new MetaMaskSDK.MetaMaskSDK({
+          dappMetadata: {
+            name: "SKALE CONNECTIVITY",
+            url: window.location.host,
+          },
+          logging: {
+            sdk: false,
+          }
+        });
 
-            connectButton.disabled = true;
-            loading.style.display = 'block';
-            errorMessage.innerText = '';
+        provider = sdk.getProvider();
 
-            if (window.ethereum) {
-                try {
-                    // Open MetaMask app using deep link
-                    const metaMaskDeepLink = 'https://metamask.app.link/';
-                    window.location.href = metaMaskDeepLink;
+        if (!provider) {
+          throw new Error('MetaMask provider is not available.');
+        }
+      } catch (error) {
+        console.error('SDK Initialization Error:', error);
+      }
+    }
 
-                    // Wait for a moment before trying to add the network
-                    setTimeout(async () => {
-                        try {
-                            // Attempt to add the network
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [skaleNetwork],
-                            });
-                            // Optionally redirect to another page or show success message
-                            // window.location.href = 'skale.html';
-                        } catch (error) {
-                            console.error('Failed to add network:', error);
-                            errorMessage.innerText = 'Failed to add network. Please try again.';
-                        } finally {
-                            connectButton.disabled = false;
-                            loading.style.display = 'none';
-                        }
-                    }, 2000); // Adjust timeout as needed
-                } catch (error) {
-                    errorMessage.innerText = `Error: ${error.message}`;
-                    connectButton.disabled = false;
-                    loading.style.display = 'none';
-                }
-            } else {
-                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask.';
-                connectButton.disabled = false;
-                loading.style.display = 'none';
-                // Optionally redirect to MetaMask download page
-                // window.location.href = 'https://metamask.io/download.html';
-            }
+    async function connect() {
+      try {
+        if (!provider) {
+          await initializeSDK();
         }
 
-        document.getElementById('connectButton').addEventListener('click', connectMetaMask);
-    </script>
+        // Request accounts from MetaMask
+        const accountsResponse = await provider.request({ method: 'eth_requestAccounts' });
+        accounts = accountsResponse;
+        updateStatus('Connected');
+
+        // Check and switch to Skale chain
+        const currentChainId = await provider.request({ method: 'eth_chainId' });
+        if (currentChainId !== skaleChainId) {
+          await switchToSkaleChain();
+        }
+      } catch (e) {
+        console.error('Connection Error:', e);
+        updateStatus('Connection Failed');
+      }
+    }
+
+    function updateStatus(text) {
+      document.getElementById('status').innerText = `Status: ${text}`;
+    }
+
+    async function switchToSkaleChain() {
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: skaleChainId }],
+        });
+        updateStatus('Switched to Skale Chain');
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          // Add the Skale chain if it's not available in MetaMask
+          await addChain();
+        } else {
+          console.error('Switch Chain Error:', switchError);
+          updateStatus('Switch Chain Failed');
+        }
+      }
+    }
+
+    async function addChain() {
+      try {
+        if (!provider) {
+          await initializeSDK();
+        }
+        
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: skaleChainId,
+              chainName: skaleChainName,
+              rpcUrls: [skaleRpcUrl],
+              blockExplorerUrls: [skaleBlockExplorerUrls],
+              nativeCurrency: { 
+                name: 'SKALE',
+                symbol: skaleCurrentSymbol,
+                decimals: 18
+              },
+            },
+          ],
+        });
+        updateStatus('Skale Chain Added');
+      } catch (e) {
+        console.error('Add Chain Error:', e);
+        updateStatus('Add Chain Failed');
+      }
+    }
+
+    // Initialize the SDK on page load
+    window.addEventListener('load', initializeSDK);
+  </script>
 </body>
 </html>
