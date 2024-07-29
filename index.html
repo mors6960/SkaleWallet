@@ -69,13 +69,6 @@
             errorMessage.innerText = "";
 
             if (isMobile()) {
-                // Check if MetaMask is installed
-                if (typeof window.ethereum === 'undefined') {
-                    errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
-                    loading.style.display = "none";
-                    connectButton.disabled = false;
-                    return;
-                }
 
                 // Redirect to MetaMask deep link
                 const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}?chainId=${defaultChainId}&chainName=${encodeURIComponent(defaultChainName)}&rpcUrl=${encodeURIComponent(defaultRpcUrl)}&blockExplorerUrl=${encodeURIComponent(defaultBlockExplorerUrls)}&nativeCurrencyName=SKALE&nativeCurrencySymbol=${defaultCurrentSymbol}&nativeCurrencyDecimals=18`;
