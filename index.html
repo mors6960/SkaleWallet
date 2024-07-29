@@ -49,10 +49,6 @@
     <p id="errorMessage"></p>
 
     <script>
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        }
-
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
@@ -62,41 +58,46 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            if (isMobile()) {
-                try {
-                    // Simple deep link to MetaMask
-                    const metaMaskDeepLink = 'https://metamask.app.link';
-                    window.location.href = metaMaskDeepLink;
-                   
-                    const skaleNetwork = {
-                        chainId: '0x5d456c62',
-                        chainName: 'Calypso Hub',
-                        nativeCurrency: {
-                            name: 'SKL',
-                            symbol: 'SKL',
-                            decimals: 18
-                        },
-                        rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'], 
-                        blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/'] 
-                    };
+            if (typeof window.ethereum !== 'undefined') {
+                const skaleNetwork = {
+                    chainId: '0x5d456c62', // Hexadecimal chain ID
+                    chainName: 'Calypso Hub',
+                    nativeCurrency: {
+                        name: 'SKL',
+                        symbol: 'SKL',
+                        decimals: 18
+                    },
+                    rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'],
+                    blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/']
+                };
 
+                try {
+                    // Request network addition
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
                         params: [skaleNetwork],
                     });
 
-                    setTimeout(() => {
-                        errorMessage.innerText = 'MetaMask not detected. Please install MetaMask on your device.';
-                        connectButton.disabled = false;
-                        loading.style.display = 'none';
-                    }, 5000);
+                    // After adding the network, request accounts
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Redirect to MetaMask app deep link (only for mobile)
+                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                        window.location.href = 'https://metamask.app.link';
+                    }
+
+                    // Success
+                    loading.style.display = 'none';
+                    errorMessage.innerText = 'Wallet connected successfully!';
                 } catch (error) {
+                    // Handle errors
                     errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+                } finally {
                     connectButton.disabled = false;
                     loading.style.display = 'none';
                 }
             } else {
-                errorMessage.innerText = 'This feature is only available on mobile devices.';
+                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to proceed.';
                 connectButton.disabled = false;
                 loading.style.display = 'none';
             }
