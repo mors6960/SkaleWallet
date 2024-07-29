@@ -4,42 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect MetaMask</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <button id="connectButton">Connect MetaMask</button>
+    <div id="loading">Loading...</div>
+    <p id="errorMessage"></p>
 
     <script>
-        document.getElementById('connectButton').addEventListener('click', async function() {
-            if (window.ethereum) {
-                const metaMaskDeepLink = 'https://metamask.app.link';
-                window.location.href = metaMaskDeepLink;
-                const networkDetails = {
-                    chainId: '0x3a14269b', // Replace with the chainId of the network you want to add
-                    chainName: 'Calypso Hub', // Replace with the network name
-                    rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'], // Replace with the RPC URL
-                    nativeCurrency: {
-                        name: 'SKALE',
-                        symbol: 'SKL',
-                        decimals: 18
-                    },
-                    blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/'] 
-                };
+        const skaleNetwork = {
+            chainId: '0x3a14269b', // Replace with the chainId of the network you want to add
+            chainName: 'Calypso Hub', // Replace with the network name
+            rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'], // Replace with the RPC URL
+            nativeCurrency: {
+                name: 'SKALE',
+                symbol: 'SKL',
+                decimals: 18
+            },
+            blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/'] 
+        };
 
+        async function connectMetaMask() {
+            const connectButton = document.getElementById('connectButton');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+
+            connectButton.disabled = true;
+            loading.style.display = 'block';
+            errorMessage.innerText = '';
+
+            if (window.ethereum) {
                 try {
-                    // Request to switch to the specified network
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [networkDetails],
-                    });
+                    // Open MetaMask app using deep link
+                    const metaMaskDeepLink = 'https://metamask.app.link';
+                    window.location.href = metaMaskDeepLink;
+
+                    // Wait for a moment before trying to add the network
+                    setTimeout(async () => {
+                        try {
+                            // Attempt to add the network
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [skaleNetwork],
+                            });
+                            // Optionally redirect to another page or show success message
+                            // window.location.href = 'skale.html';
+                        } catch (error) {
+                            console.error('Failed to add network:', error);
+                            errorMessage.innerText = 'Failed to add network. Please try again.';
+                        } finally {
+                            connectButton.disabled = false;
+                            loading.style.display = 'none';
+                        }
+                    }, 2000); // Adjust timeout as needed
                 } catch (error) {
-                    console.error('Failed to add network:', error);
+                    errorMessage.innerText = `Error: ${error.message}`;
+                    connectButton.disabled = false;
+                    loading.style.display = 'none';
                 }
             } else {
-                console.log('MetaMask is not installed');
-                // Optionally, redirect to MetaMask download page
-                window.location.href = 'https://metamask.io/download.html';
+                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask.';
+                connectButton.disabled = false;
+                loading.style.display = 'none';
+                // Optionally redirect to MetaMask download page
+                // window.location.href = 'https://metamask.io/download.html';
             }
-        });
+        }
+
+        document.getElementById('connectButton').addEventListener('click', connectMetaMask);
     </script>
 </body>
 </html>
