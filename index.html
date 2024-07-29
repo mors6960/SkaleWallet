@@ -71,7 +71,7 @@
             if (isMobile()) {
 
                 // Redirect to MetaMask deep link
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}?chainId=${defaultChainId}&chainName=${encodeURIComponent(defaultChainName)}&rpcUrl=${encodeURIComponent(defaultRpcUrl)}&blockExplorerUrl=${encodeURIComponent(defaultBlockExplorerUrls)}&nativeCurrencyName=SKALE&nativeCurrencySymbol=${defaultCurrentSymbol}&nativeCurrencyDecimals=18`;
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
                 window.location.href = metaMaskDeepLink;
 
                 // Add Skale network to MetaMask
