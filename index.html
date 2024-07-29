@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect MetaMask Wallet</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,6 +37,11 @@
             display: none;
             margin-top: 20px;
         }
+        #walletAddress {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
         #errorMessage {
             color: red;
             margin-top: 20px;
@@ -46,6 +52,7 @@
     <h1>Connect MetaMask Wallet</h1>
     <button id="connectButton">Connect MetaMask Wallet</button>
     <div id="loading">Loading...</div>
+    <p id="walletAddress"></p>
     <p id="errorMessage"></p>
 
     <script>
@@ -57,32 +64,83 @@
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
             const errorMessage = document.getElementById('errorMessage');
+            const walletAddress = document.getElementById('walletAddress');
 
             connectButton.disabled = true;
             loading.style.display = 'block';
             errorMessage.innerText = '';
+            walletAddress.innerText = '';
 
             if (window.ethereum) {
                 try {
+                    // Request account access
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    window.location.href = 'skale.html';
+
+                    // Connect to Skale Network
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const skaleChainId = 1564830818; // Skale network chain ID
+                    const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague';
+                    const skaleBlockExplorerUrl = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
+                    const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
+
+                    const network = await provider.getNetwork();
+                    if (network.chainId !== skaleChainId) {
+                        try {
+                            await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                        } catch (switchError) {
+                            if (switchError.code === 4902) {
+                                await provider.send('wallet_addEthereumChain', [{
+                                    chainId: skaleChainIdHex,
+                                    chainName: 'Skale Network',
+                                    rpcUrls: [skaleRpcUrl],
+                                    nativeCurrency: {
+                                        name: 'sFUEL',
+                                        symbol: 'sFUEL',
+                                        decimals: 18
+                                    },
+                                    blockExplorerUrls: [skaleBlockExplorerUrl]
+                                }]);
+                                await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                            } else {
+                                throw new Error(`Error switching network: ${switchError.message}`);
+                            }
+                        }
+                    }
+
+                    const signer = provider.getSigner();
+                    const address = await signer.getAddress();
+                    const balance = await provider.getBalance(address);
+                    const sFUELBalance = ethers.utils.formatUnits(balance, 18);
+
+                    walletAddress.innerText = `Connected: ${address}, Balance: ${sFUELBalance} sFUEL`;
                 } catch (error) {
-                    errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                    connectButton.disabled = false;
+                    errorMessage.innerText = `Error connecting to Skale: ${error.message}`;
+                } finally {
                     loading.style.display = 'none';
+                    connectButton.disabled = false;
                 }
             } else if (isMobile()) {
+                // Redirect to MetaMask mobile deep link
                 const dappUrl = encodeURIComponent(window.location.href);
                 const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
                 window.location.href = metaMaskDeepLink;
             } else {
                 errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
-                connectButton.disabled = false;
                 loading.style.display = 'none';
+                connectButton.disabled = false;
             }
         }
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
+
+        // Handle chain and account changes
+        window.ethereum?.on('chainChanged', () => {
+            window.location.reload();
+        });
+
+        window.ethereum?.on('accountsChanged', () => {
+            window.location.reload();
+        });
     </script>
 </body>
 </html>
