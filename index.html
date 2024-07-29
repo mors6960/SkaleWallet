@@ -29,9 +29,9 @@
   <button onclick="connect()">Connect</button>
   <button onclick="addChain()">Add Skale Chain</button>
 
-  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk"></script>
   <script>
-    const sdk = new MetaMaskSDK.MetaMaskSDK({
+    const sdk = new MetaMaskSDK({
       dappMetadata: {
         name: "SKALE CONNECTIVITY",
         url: window.location.host,
@@ -52,12 +52,17 @@
     //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
-        const res = await sdk.connect();
         provider = sdk.getProvider();
-        console.log('request data', res);
-        updateStatus('Connected');
-
+        if (!provider) {
+          throw new Error('MetaMask provider is not available.');
+        }
+        
+        // Request accounts
+        const res = await provider.request({ method: 'eth_requestAccounts' });
         accounts = res;
+
+        // Update status
+        updateStatus('Connected');
 
         // Check and switch to Skale chain
         const currentChainId = await provider.request({ method: 'eth_chainId' });
@@ -65,7 +70,7 @@
           await switchToSkaleChain();
         }
       } catch (e) {
-        console.log('request accounts ERR', e);
+        console.error('Connection Error:', e);
         updateStatus('Connection Failed');
       }
     }
@@ -88,7 +93,7 @@
             // Add the Skale chain if it's not available in MetaMask
             await addChain();
         } else {
-            console.log('SWITCH ERR', switchError);
+            console.error('Switch Chain Error:', switchError);
             updateStatus('Switch Chain Failed');
         }
       }
@@ -115,7 +120,7 @@
         });
         updateStatus('Skale Chain Added');
       } catch (e) {
-        console.log('ADD ERR', e);
+        console.error('Add Chain Error:', e);
         updateStatus('Add Chain Failed');
       }
     }
