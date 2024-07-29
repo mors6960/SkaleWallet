@@ -71,14 +71,15 @@
             if (isMobile()) {
                 const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
                     window.location.href = metaMaskDeepLink;
-                try {
-                    // Check if MetaMask is installed
-                    if (typeof window.ethereum === 'undefined') {
-                        errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
-                        loading.style.display = "none";
-                        connectButton.disabled = false;
-                        return;
-                    }
+                    addChain();
+                // try {
+                //     // Check if MetaMask is installed
+                //     if (typeof window.ethereum === 'undefined') {
+                //         errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+                //         loading.style.display = "none";
+                //         connectButton.disabled = false;
+                //         return;
+                //     }
 
                     // Set a flag to detect redirection from MetaMask
                     localStorage.setItem("metaMaskRedirect", "true");
@@ -86,12 +87,13 @@
                     // Redirect to MetaMask
                     // const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
                     // window.location.href = metaMaskDeepLink;
-                } catch (error) {
-                    console.error('Redirect Error:', error);
-                    errorMessage.innerText = `Error: ${error.message}`;
-                    loading.style.display = "none";
-                    connectButton.disabled = false;
-                }
+                //}
+                //  catch (error) {
+                //     console.error('Redirect Error:', error);
+                //     errorMessage.innerText = `Error: ${error.message}`;
+                //     loading.style.display = "none";
+                //     connectButton.disabled = false;
+                // }
             } else {
                 errorMessage.innerText = "This feature is only available on mobile devices.";
                 loading.style.display = "none";
