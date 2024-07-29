@@ -49,6 +49,13 @@
     <p id="errorMessage"></p>
 
     <script>
+        async function deepLinkToMetaMask() {
+            // Attempt to open MetaMask using a deep link
+            window.location.href = 'https://metamask.app.link';
+            // Wait for a short period to allow MetaMask to open
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
@@ -58,11 +65,11 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            // Log to see if MetaMask is detected
-            console.log('MetaMask detection:', typeof window.ethereum !== 'undefined');
+            // Attempt to deep link to MetaMask
+            await deepLinkToMetaMask();
 
+            // Check if MetaMask is available after attempting deep link
             if (typeof window.ethereum !== 'undefined') {
-                // MetaMask is detected
                 const skaleNetwork = {
                     chainId: '0x5d456c62', // Hexadecimal chain ID
                     chainName: 'Calypso Hub',
@@ -84,13 +91,6 @@
 
                     // Request accounts
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-                    // Redirect to MetaMask app deep link (only for mobile)
-                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                        setTimeout(() => {
-                            window.location.href = 'https://metamask.app.link';
-                        }, 1000); // Short delay to allow network addition to complete
-                    }
 
                     // Success
                     loading.style.display = 'none';
