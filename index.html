@@ -74,7 +74,7 @@
             } else if (isMobile()) {
                 const dappUrl = encodeURIComponent(window.location.href);
                 const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                // window.location.href = metaMaskDeepLink;
+                window.location.href = metaMaskDeepLink;
                 console.log (connectButton);
             } else {
                 errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
