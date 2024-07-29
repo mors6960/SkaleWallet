@@ -63,9 +63,10 @@
             errorMessage.innerText = '';
 
             if (isMobile()) {
-                const dappUrl = encodeURIComponent(window.location.href); // Replace with your specific URL if needed
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                window.location.href = metaMaskDeepLink;
+                // const dappUrl = encodeURIComponent(window.location.href); 
+                // const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                // window.location.href = metaMaskDeepLink;
+                
             } else {
                 errorMessage.innerText = 'This feature is only available on mobile devices.';
                 connectButton.disabled = false;
