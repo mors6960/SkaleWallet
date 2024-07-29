@@ -73,8 +73,6 @@
             // Simple deep link to MetaMask
             const metaMaskDeepLink = "https://metamask.app.link";
             window.location.href = metaMaskDeepLink;
-            window.location.href = "skale.html"
-            
 
             // You may want to handle a timeout to redirect if MetaMask is not installed
             setTimeout(() => {
@@ -96,9 +94,63 @@
         }
       }
 
+      async function addChain() {
+        const loading = document.getElementById("loading");
+        const errorMessage = document.getElementById("errorMessage");
+        
+        loading.style.display = "block";
+        errorMessage.innerText = "";
+
+        try {
+          // Wait for MetaMask to be available
+          if (typeof window.ethereum === 'undefined') {
+            errorMessage.innerText = "MetaMask not available. Please install MetaMask.";
+            loading.style.display = "none";
+            return;
+          }
+
+          const provider = window.ethereum;
+          
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: defaultChainId,
+                chainName: defaultChainName,
+                rpcUrls: [defaultRpcUrl],
+                blockExplorerUrls: [defaultBlockExplorerUrls],
+                nativeCurrency: {
+                  name: 'SKALE',
+                  symbol: defaultCurrentSymbol,
+                  decimals: 18
+                },
+              },
+            ],
+          });
+          
+          errorMessage.innerText = "Skale Chain Added Successfully!";
+          loading.style.display = "none";
+        } catch (e) {
+          console.error('Add Chain Error:', e);
+          errorMessage.innerText = `Add Chain Error: ${e.message}`;
+          loading.style.display = "none";
+        }
+      }
+
+      // Function to handle redirection to MetaMask and then to addChain
+      function handleConnection() {
+        connectWallet();
+        
+        // Redirect to skale.html after 5 seconds (adjust the delay as needed)
+        setTimeout(() => {
+          window.location.href = "skale.html";
+          addChain();
+        }, 5000); // 5000 ms = 5 seconds
+      }
+
       document
         .getElementById("connectButton")
-        .addEventListener("click", connectWallet);
+        .addEventListener("click", handleConnection);
     </script>
   </body>
 </html>
