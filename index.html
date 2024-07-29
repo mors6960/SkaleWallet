@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect MetaMask Wallet and Switch to Skale</title>
+    <title>Connect MetaMask Wallet</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,10 +42,9 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-    <h1>Connect MetaMask Wallet and Switch to Skale</h1>
+    <h1>Connect MetaMask Wallet</h1>
     <button id="connectButton">Connect MetaMask Wallet</button>
     <div id="loading">Loading...</div>
     <p id="errorMessage"></p>
@@ -65,11 +64,14 @@
             if (provider) {
                 if (provider.isMetaMask) {
                     try {
-                        // Request user accounts
                         await provider.request({ method: 'eth_requestAccounts' });
-
-                        // After connection, switch to Skale
-                        await switchToSkale(provider);
+                        if (isMobile()) {
+                            const dappUrl = encodeURIComponent(window.location.href);
+                            const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                            window.location.href = metaMaskDeepLink;
+                        } else {
+                            window.location.href = 'skale.html';
+                        }
                     } catch (error) {
                         errorMessage.innerText = `Error connecting wallet: ${error.message}`;
                     } finally {
@@ -88,52 +90,8 @@
             }
         }
 
-        async function switchToSkale(provider) {
-            const skaleChainId = 1564830818; // Skale network chain ID
-            const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague';
-            const skaleBlockExplorerUrl = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
-            const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
-
-            try {
-                const network = await provider.request({ method: 'eth_chainId' });
-                if (network !== skaleChainIdHex) {
-                    try {
-                        await provider.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: skaleChainIdHex,
-                                chainName: 'Skale Network',
-                                rpcUrls: [skaleRpcUrl],
-                                nativeCurrency: {
-                                    name: 'sFUEL',
-                                    symbol: 'sFUEL',
-                                    decimals: 18
-                                },
-                                blockExplorerUrls: [skaleBlockExplorerUrl]
-                            }]
-                        });
-                    } catch (addError) {
-                        if (addError.code === 4902) {
-                            errorMessage.innerText = 'Skale Network is not available in MetaMask. Please add it manually.';
-                        } else {
-                            throw new Error(`Error adding Skale network: ${addError.message}`);
-                        }
-                    }
-                    await provider.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: skaleChainIdHex }]
-                    });
-                }
-                // Display wallet address and balance on successful switch
-                const signer = new ethers.providers.Web3Provider(provider).getSigner();
-                const address = await signer.getAddress();
-                const balance = await signer.getBalance();
-                const sFUELBalance = ethers.utils.formatUnits(balance, 18);
-
-                errorMessage.innerText = `Connected: ${address}, Balance: ${sFUELBalance} sFUEL`;
-            } catch (error) {
-                errorMessage.innerText = `Error switching to Skale: ${error.message}`;
-            }
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
