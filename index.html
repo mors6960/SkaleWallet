@@ -71,8 +71,10 @@
             if (isMobile()) {
 
                 // Redirect to MetaMask deep link
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
-                window.location.href = metaMaskDeepLink;
+
+                onboardButton.onclick = () => window.location.href = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`
+                // const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
+                // window.location.href = metaMaskDeepLink;
 
                 // Add Skale network to MetaMask
                 try {
