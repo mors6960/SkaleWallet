@@ -69,17 +69,10 @@
     errorMessage.innerText = "";
 
     if (isMobile()) {
-        // Check if MetaMask is installed
-        if (typeof window.ethereum === 'undefined') {
-            errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
-            loading.style.display = "none";
-            connectButton.disabled = false;
-            return;
-        }
-
         try {
             const provider = window.ethereum;
-
+            const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
+            window.location.href = metaMaskDeepLink;
             // Add Skale network to MetaMask
             await provider.request({
                 method: 'wallet_addEthereumChain',
@@ -108,8 +101,7 @@
         }
 
         // Redirect to MetaMask deep link
-        const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
-        window.location.href = metaMaskDeepLink;
+       
     } else {
         errorMessage.innerText = "This feature is only available on mobile devices.";
         loading.style.display = "none";
