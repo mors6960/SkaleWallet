@@ -58,8 +58,7 @@
         function isMobile() {
             return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
-        const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
-          window.location.href = metaMaskDeepLink;
+        
 
         async function connectWallet() {
             const connectButton = document.getElementById("connectButton");
@@ -72,6 +71,8 @@
 
             if (isMobile()) {
                 try {
+                    const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
+          window.location.href = metaMaskDeepLink;
                     // Check if MetaMask is installed
                     if (typeof window.ethereum === 'undefined') {
                         throw new Error("MetaMask not detected. Please install MetaMask on your device.");
@@ -80,6 +81,7 @@
                     // Request MetaMask to add the Skale chain
                     const provider = window.ethereum;
                     await provider.request({
+                        
                         method: 'wallet_addEthereumChain',
                         params: [
                             {
