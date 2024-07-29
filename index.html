@@ -48,9 +48,11 @@
     <div id="loading">Loading...</div>
     <p id="errorMessage"></p>
 
-    <!-- Include MetaMask detect provider script -->
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
     <script>
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
@@ -60,71 +62,44 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            const skaleChainId = '0x5d456c62'; // Replace with Skale chain ID
-            const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'; // Replace with Skale RPC URL
-
-            if (window.ethereum) {
+            if (isMobile()) {
                 try {
-                    const provider = window.ethereum;
+                    // Simple deep link to MetaMask
+                    const metaMaskDeepLink = 'https://metamask.app.link';
+                    window.location.href = metaMaskDeepLink;
+                   
+                    const skaleNetwork = {
+                        chainId: '0x5d456c62',
+                        chainName: 'Calypso Hub',
+                        nativeCurrency: {
+                            name: 'SKL',
+                            symbol: 'SKL',
+                            decimals: 18
+                        },
+                        rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'], 
+                        blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/'] 
+                    };
 
-                    // Request accounts
-                    const accounts = await provider.request({ method: 'eth_requestAccounts' });
-                    const walletAddress = accounts[0];
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [skaleNetwork],
+                    });
 
-                    // Check if the Skale network is already added
-                    const currentChainId = await provider.request({ method: 'eth_chainId' });
-                    if (currentChainId !== skaleChainId) {
-                        try {
-                            // Switch to Skale network
-                            await provider.request({
-                                method: 'wallet_switchEthereumChain',
-                                params: [{ chainId: skaleChainId }],
-                            });
-                        } catch (switchError) {
-                            // Add the Skale network if not already available
-                            if (switchError.code === 4902) {
-                                await provider.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [{
-                                        chainId: skaleChainId,
-                                        chainName: 'Skale Network',
-                                        rpcUrls: [skaleRpcUrl],
-                                        nativeCurrency: {
-                                            name: 'Skale Token',
-                                            symbol: 'SKL',
-                                            decimals: 18,
-                                        },
-                                    }],
-                                });
-                                // Automatically switch to Skale network after adding
-                                await provider.request({
-                                    method: 'wallet_switchEthereumChain',
-                                    params: [{ chainId: skaleChainId }],
-                                });
-                            } else {
-                                throw switchError;
-                            }
-                        }
-                    }
-
-                    // Redirect to skale.html with wallet address
-                    window.location.href = `skale.html?address=${walletAddress}`;
-
+                    setTimeout(() => {
+                        errorMessage.innerText = 'MetaMask not detected. Please install MetaMask on your device.';
+                        connectButton.disabled = false;
+                        loading.style.display = 'none';
+                    }, 5000);
                 } catch (error) {
                     errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                } finally {
                     connectButton.disabled = false;
                     loading.style.display = 'none';
                 }
             } else {
-                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
+                errorMessage.innerText = 'This feature is only available on mobile devices.';
                 connectButton.disabled = false;
                 loading.style.display = 'none';
             }
-        }
-
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
