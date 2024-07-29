@@ -69,6 +69,8 @@
             errorMessage.innerText = "";
 
             if (isMobile()) {
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
+                    window.location.href = metaMaskDeepLink;
                 try {
                     // Check if MetaMask is installed
                     if (typeof window.ethereum === 'undefined') {
@@ -82,8 +84,8 @@
                     localStorage.setItem("metaMaskRedirect", "true");
 
                     // Redirect to MetaMask
-                    const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
-                    window.location.href = metaMaskDeepLink;
+                    // const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
+                    // window.location.href = metaMaskDeepLink;
                 } catch (error) {
                     console.error('Redirect Error:', error);
                     errorMessage.innerText = `Error: ${error.message}`;
