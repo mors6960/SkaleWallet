@@ -1,135 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect MetaMask Wallet</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        #connectButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        #connectButton:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-        #loading {
-            display: none;
-            margin-top: 20px;
-        }
-        #errorMessage {
-            color: red;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMask Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    #status {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <h1>Connect MetaMask Wallet</h1>
-    <button id="connectButton">Connect MetaMask Wallet</button>
-    <div id="loading">Loading...</div>
-    <p id="errorMessage"></p>
+  <h1>MetaMask Integration</h1>
+  <div id="status">Status: Not Connected</div>
+  <button onclick="connect()">Connect</button>
+  <button onclick="addChain()">Add Skale Chain</button>
 
-    <script>
-        async function deepLinkToMetaMask() {
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                window.location.href = 'https://metamask.app.link';
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
+  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+  <script>
+    const sdk = new MetaMaskSDK.MetaMaskSDK({
+      dappMetadata: {
+        name: "SKALE CONNECTIVITY",
+        url: window.location.host,
+      },
+      logging: {
+        sdk: false,
+      }
+    });
+
+    let provider;
+    const skaleChainId = '0x5d456c62'; // Skale chain ID (hexadecimal)
+    const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'; // Skale RPC URL
+    const skaleBlockExplorerUrls = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
+    const skaleCurrentSymbol = 'SKL'; // Skale native currency symbol
+    const skaleChainName = 'Calypso Hub'; // Skale chain name
+    var accounts;
+
+    //<---------CONNECT WITH METAMASK----------------------->
+    async function connect() {
+      try {
+        const res = await sdk.connect();
+        provider = sdk.getProvider();
+        console.log('request data', res);
+        updateStatus('Connected');
+
+        accounts = res;
+
+        // Check and switch to Skale chain
+        const currentChainId = await provider.request({ method: 'eth_chainId' });
+        if (currentChainId !== skaleChainId) {
+          await switchToSkaleChain();
         }
+      } catch (e) {
+        console.log('request accounts ERR', e);
+        updateStatus('Connection Failed');
+      }
+    }
 
-        async function requestNetworkChange(networkParams) {
-            try {
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [networkParams],
-                });
-                return true;
-            } catch (error) {
-                console.error('Network addition failed:', error);
-                throw new Error('Network addition failed');
-            }
+    function updateStatus(text) {
+      document.getElementById('status').innerText = `Status: ${text}`;
+    }
+
+    // <---------------------Switch to Skale chain------------------>
+    async function switchToSkaleChain() {
+      try {
+        await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: skaleChainId }],
+        });
+        updateStatus('Switched to Skale Chain');
+      } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask
+        if (switchError.code === 4902) {
+            // Add the Skale chain if it's not available in MetaMask
+            await addChain();
+        } else {
+            console.log('SWITCH ERR', switchError);
+            updateStatus('Switch Chain Failed');
         }
+      }
+    }
 
-        async function requestAccountAccess() {
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                return true;
-            } catch (error) {
-                console.error('Account access failed:', error);
-                throw new Error('Account access failed');
-            }
-        }
-
-        async function connectWallet() {
-            const connectButton = document.getElementById('connectButton');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
-
-            connectButton.disabled = true;
-            loading.style.display = 'block';
-            errorMessage.innerText = '';
-
-            // Open MetaMask app deep link
-            await deepLinkToMetaMask();
-
-            // Check if MetaMask is available
-            if (typeof window.ethereum !== 'undefined') {
-                const skaleNetwork = {
-                    chainId: '0x5d456c62', // Ensure this is correct for Skale
-                    chainName: 'Calypso Hub',
-                    nativeCurrency: {
-                        name: 'SKL',
-                        symbol: 'SKL',
-                        decimals: 18
-                    },
-                    rpcUrls: ['https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'],
-                    blockExplorerUrls: ['https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/']
-                };
-
-                try {
-                    // Request network addition
-                    await requestNetworkChange(skaleNetwork);
-
-                    // Request accounts (will prompt MetaMask for connection)
-                    await requestAccountAccess();
-
-                    // Success
-                    loading.style.display = 'none';
-                    errorMessage.innerText = 'Wallet connected successfully!';
-                } catch (error) {
-                    errorMessage.innerText = `Error: ${error.message}`;
-                } finally {
-                    connectButton.disabled = false;
-                    loading.style.display = 'none';
-                }
-            } else {
-                // Prompt to install MetaMask
-                errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to proceed.';
-                connectButton.disabled = false;
-                loading.style.display = 'none';
-            }
-        }
-
-        document.getElementById('connectButton').addEventListener('click', connectWallet);
-    </script>
+    // <-----------------------ADD CHAIN------------------>
+    async function addChain() {
+      try {
+        await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: skaleChainId,
+                chainName: skaleChainName,
+                rpcUrls: [skaleRpcUrl],
+                blockExplorerUrls: [skaleBlockExplorerUrls],
+                nativeCurrency: { 
+                  name: 'SKALE', // Name of the currency
+                  symbol: skaleCurrentSymbol, // Symbol of the currency
+                  decimals: 18 // Number of decimals
+                },
+              },
+            ],
+        });
+        updateStatus('Skale Chain Added');
+      } catch (e) {
+        console.log('ADD ERR', e);
+        updateStatus('Add Chain Failed');
+      }
+    }
+  </script>
 </body>
 </html>
