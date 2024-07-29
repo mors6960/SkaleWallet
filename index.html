@@ -56,6 +56,29 @@
             }
         }
 
+        async function requestNetworkChange(networkParams) {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [networkParams],
+                });
+                return true;
+            } catch (error) {
+                console.error('Network addition failed:', error);
+                throw new Error('Network addition failed');
+            }
+        }
+
+        async function requestAccountAccess() {
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                return true;
+            } catch (error) {
+                console.error('Account access failed:', error);
+                throw new Error('Account access failed');
+            }
+        }
+
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
@@ -84,20 +107,16 @@
 
                 try {
                     // Request network addition
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [skaleNetwork],
-                    });
+                    await requestNetworkChange(skaleNetwork);
 
                     // Request accounts (will prompt MetaMask for connection)
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    await requestAccountAccess();
 
                     // Success
                     loading.style.display = 'none';
                     errorMessage.innerText = 'Wallet connected successfully!';
                 } catch (error) {
-                    console.error('Error connecting wallet:', error); // Log error for debugging
-                    errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+                    errorMessage.innerText = `Error: ${error.message}`;
                 } finally {
                     connectButton.disabled = false;
                     loading.style.display = 'none';
