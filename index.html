@@ -71,16 +71,19 @@
         if (isMobile()) {
           try {
             // Simple deep link to MetaMask
-            const metaMaskDeepLink = "https://metamask.app.link/";
+            const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.href}`;
             window.location.href = metaMaskDeepLink;
-            addChain();
+            
+            // Set a flag to indicate the user was redirected
+            localStorage.setItem("redirected", "true");
 
-            // You may want to handle a timeout to redirect if MetaMask is not installed
+            // Optionally handle a timeout to show an error message if MetaMask is not installed
             setTimeout(() => {
-              errorMessage.innerText =
-                "MetaMask not detected. Please install MetaMask on your device.";
-              connectButton.disabled = false;
-              loading.style.display = "none";
+              if (localStorage.getItem("redirected") === "true") {
+                errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+                connectButton.disabled = false;
+                loading.style.display = "none";
+              }
             }, 5000);
           } catch (error) {
             errorMessage.innerText = `Error connecting wallet: ${error.message}`;
@@ -88,8 +91,7 @@
             loading.style.display = "none";
           }
         } else {
-          errorMessage.innerText =
-            "This feature is only available on mobile devices.";
+          errorMessage.innerText = "This feature is only available on mobile devices.";
           connectButton.disabled = false;
           loading.style.display = "none";
         }
@@ -141,17 +143,17 @@
       // Function to handle redirection to MetaMask and then to addChain
       function handleConnection() {
         connectWallet();
-        
-        // Redirect to skale.html after 5 seconds (adjust the delay as needed)
-        setTimeout(() => {
-        //   window.location.href = "skale.html";
-          addChain();
-        }, 5000); // 5000 ms = 5 seconds
       }
 
       document
         .getElementById("connectButton")
         .addEventListener("click", handleConnection);
+
+      // Check if user is back from MetaMask
+      if (localStorage.getItem("redirected") === "true") {
+        localStorage.removeItem("redirected");
+        addChain();
+      }
     </script>
   </body>
 </html>
