@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect MetaMask Wallet</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.1.0/dist/onboarding.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,13 +81,18 @@
     </style>
 </head>
 <body>
-    <h1>Connect MetaMask Wallet</h1>
+    <h1>Connect MetaMask Wallet to Skale</h1>
     <button id="connectButton" class="block-button">Connect MetaMask Wallet</button>
     <div id="loading">Loading...</div>
+    <p id="walletAddress"></p>
     <p id="errorMessage"></p>
 
     <script>
         const forwarderOrigin = 'http://localhost:3000';
+        const skaleChainId = 1564830818; // Skale network chain ID
+        const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague';
+        const skaleBlockExplorerUrl = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
+        const skaleChainIdHex = `0x${skaleChainId.toString(16)}`;
 
         function isMobile() {
             return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -98,20 +105,50 @@
         async function connectMetaMask() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
+            const walletAddress = document.getElementById('walletAddress');
             const errorMessage = document.getElementById('errorMessage');
 
             connectButton.disabled = true;
             loading.style.display = 'block';
+            walletAddress.innerText = '';
             errorMessage.innerText = '';
 
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                console.log("accounts: ", accounts);
-                window.location.href = 'skale.html';
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const network = await provider.getNetwork();
+                if (network.chainId !== skaleChainId) {
+                    try {
+                        await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await provider.send('wallet_addEthereumChain', [{
+                                chainId: skaleChainIdHex,
+                                chainName: 'Skale Network',
+                                rpcUrls: [skaleRpcUrl],
+                                nativeCurrency: {
+                                    name: 'sFUEL',
+                                    symbol: 'sFUEL',
+                                    decimals: 18
+                                },
+                                blockExplorerUrls: [skaleBlockExplorerUrl]
+                            }]);
+                            await provider.send('wallet_switchEthereumChain', [{ chainId: skaleChainIdHex }]);
+                        } else {
+                            throw new Error(`Error switching network: ${switchError.message}`);
+                        }
+                    }
+                }
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                const balance = await provider.getBalance(address);
+                const sFUELBalance = ethers.utils.formatUnits(balance, 18);
+
+                walletAddress.innerText = `Connected: ${address}, Balance: ${sFUELBalance} sFUEL`;
             } catch (error) {
                 errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                connectButton.disabled = false;
+            } finally {
                 loading.style.display = 'none';
+                connectButton.disabled = false;
             }
         }
 
@@ -126,16 +163,16 @@
         function onboardMetaMaskClient() {
             const connectButton = document.getElementById('connectButton');
             if (!isMetamaskInstalled()) {
-                console.log("MetaMask is not installed :(");
                 connectButton.innerText = "Click here to install MetaMask";
                 connectButton.onclick = installMetaMask;
             } else {
-                console.log("MetaMask is installed!");
                 connectButton.onclick = connectMetaMask;
             }
         }
 
         window.addEventListener('DOMContentLoaded', onboardMetaMaskClient);
+        window.ethereum?.on('chainChanged', () => window.location.reload());
+        window.ethereum?.on('accountsChanged', () => window.location.reload());
     </script>
 </body>
 </html>
