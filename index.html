@@ -71,8 +71,9 @@
         if (isMobile()) {
           try {
             // Simple deep link to MetaMask
-            const metaMaskDeepLink = "https://metamask.app.link";
+            const metaMaskDeepLink = "https://metamask.app.link/";
             window.location.href = metaMaskDeepLink;
+            addChain();
 
             // You may want to handle a timeout to redirect if MetaMask is not installed
             setTimeout(() => {
@@ -143,7 +144,7 @@
         
         // Redirect to skale.html after 5 seconds (adjust the delay as needed)
         setTimeout(() => {
-          window.location.href = "skale.html";
+        //   window.location.href = "skale.html";
           addChain();
         }, 5000); // 5000 ms = 5 seconds
       }
