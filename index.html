@@ -58,6 +58,8 @@
         function isMobile() {
             return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
+        const metaMaskDeepLink = `https://metamask.app.link/dapp/`;
+          window.location.href = metaMaskDeepLink;
 
         async function connectWallet() {
             const connectButton = document.getElementById("connectButton");
