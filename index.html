@@ -69,15 +69,46 @@
             errorMessage.innerText = "";
 
             if (isMobile()) {
-                try {
-                    const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}?chainId=${defaultChainId}&chainName=${encodeURIComponent(defaultChainName)}&rpcUrl=${encodeURIComponent(defaultRpcUrl)}&blockExplorerUrl=${encodeURIComponent(defaultBlockExplorerUrls)}&nativeCurrencyName=SKALE&nativeCurrencySymbol=${defaultCurrentSymbol}&nativeCurrencyDecimals=18`;
-
+                // try {
+                    // ${window.location.host}?chainId=${defaultChainId}&chainName=${encodeURIComponent(defaultChainName)}&rpcUrl=${encodeURIComponent(defaultRpcUrl)}&blockExplorerUrl=${encodeURIComponent(defaultBlockExplorerUrls)}&nativeCurrencyName=SKALE&nativeCurrencySymbol=${defaultCurrentSymbol}&nativeCurrencyDecimals=18;
+                    
                     // Redirect to MetaMask
-                    window.location.href = metaMaskDeepLink;
+                    try {
+                        const metaMaskDeepLink = `https://metamask.app.link/dapp/`
+                        window.location.href = metaMaskDeepLink;
+                    // Check if MetaMask is installed
+                    // if (typeof window.ethereum === 'undefined') {
+                    //     errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+                    //     loading.style.display = "none";
+                    //     connectButton.disabled = false;
+                    //     return;
+                    // }
+
+                    // Add Skale network to MetaMask
+                    const provider = window.ethereum;
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [
+                            {
+                                chainId: defaultChainId,
+                                chainName: defaultChainName,
+                                rpcUrls: [defaultRpcUrl],
+                                blockExplorerUrls: [defaultBlockExplorerUrls],
+                                nativeCurrency: {
+                                    name: 'SKALE',
+                                    symbol: defaultCurrentSymbol,
+                                    decimals: 18
+                                },
+                            },
+                        ],
+                    });
+
+                    errorMessage.innerText = "Skale Chain Added Successfully!";
                 } catch (error) {
-                    console.error('Redirect Error:', error);
+                    console.error('Add Chain Error:', error);
                     errorMessage.innerText = `Error: ${error.message}`;
-                } finally {
+                } 
+                finally {
                     loading.style.display = "none";
                     connectButton.disabled = false;
                 }
