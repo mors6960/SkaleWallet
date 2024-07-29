@@ -60,57 +60,62 @@
         }
 
         async function connectWallet() {
-            const connectButton = document.getElementById("connectButton");
-            const loading = document.getElementById("loading");
-            const errorMessage = document.getElementById("errorMessage");
+    const connectButton = document.getElementById("connectButton");
+    const loading = document.getElementById("loading");
+    const errorMessage = document.getElementById("errorMessage");
 
-            connectButton.disabled = true;
-            loading.style.display = "block";
-            errorMessage.innerText = "";
+    connectButton.disabled = true;
+    loading.style.display = "block";
+    errorMessage.innerText = "";
 
-            if (isMobile()) {
-
-                // Redirect to MetaMask deep link
-
-                onboardButton.onclick = () => window.location.href = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`
-                // const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
-                // window.location.href = metaMaskDeepLink;
-
-                // Add Skale network to MetaMask
-                try {
-                    const provider = window.ethereum;
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [
-                            {
-                                chainId: defaultChainId,
-                                chainName: defaultChainName,
-                                rpcUrls: [defaultRpcUrl],
-                                blockExplorerUrls: [defaultBlockExplorerUrls],
-                                nativeCurrency: {
-                                    name: 'SKALE',
-                                    symbol: defaultCurrentSymbol,
-                                    decimals: 18
-                                },
-                            },
-                        ],
-                    });
-
-                    errorMessage.innerText = "Skale Chain Added Successfully!";
-                } catch (error) {
-                    console.error('Add Chain Error:', error);
-                    errorMessage.innerText = `Error: ${error.message}`;
-                } 
-                finally {
-                    loading.style.display = "none";
-                    connectButton.disabled = false;
-                }
-            } else {
-                errorMessage.innerText = "This feature is only available on mobile devices.";
-                loading.style.display = "none";
-                connectButton.disabled = false;
-            }
+    if (isMobile()) {
+        // Check if MetaMask is installed
+        if (typeof window.ethereum === 'undefined') {
+            errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+            loading.style.display = "none";
+            connectButton.disabled = false;
+            return;
         }
+
+        try {
+            const provider = window.ethereum;
+
+            // Add Skale network to MetaMask
+            await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                    {
+                        chainId: defaultChainId,
+                        chainName: defaultChainName,
+                        rpcUrls: [defaultRpcUrl],
+                        blockExplorerUrls: [defaultBlockExplorerUrls],
+                        nativeCurrency: {
+                            name: 'SKALE',
+                            symbol: defaultCurrentSymbol,
+                            decimals: 18
+                        },
+                    },
+                ],
+            });
+
+            errorMessage.innerText = "Skale Chain Added Successfully!";
+        } catch (error) {
+            console.error('Add Chain Error:', error);
+            errorMessage.innerText = `Error: ${error.message}`;
+        } finally {
+            loading.style.display = "none";
+            connectButton.disabled = false;
+        }
+
+        // Redirect to MetaMask deep link
+        const metaMaskDeepLink = `https://metamask.app.link/dapp/mors6960.github.io/SkaleWallet/`;
+        window.location.href = metaMaskDeepLink;
+    } else {
+        errorMessage.innerText = "This feature is only available on mobile devices.";
+        loading.style.display = "none";
+        connectButton.disabled = false;
+    }
+}
 
         document.getElementById("connectButton").addEventListener("click", connectWallet);
     </script>
