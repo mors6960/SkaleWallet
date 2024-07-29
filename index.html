@@ -49,6 +49,10 @@
     <p id="errorMessage"></p>
 
     <script>
+        function isMobile() {
+            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
             const loading = document.getElementById('loading');
@@ -58,39 +62,15 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            if (window.ethereum) {
-                const provider = window.ethereum;
-
-                if (provider.isMetaMask) {
-                    try {
-                        await provider.request({ method: 'eth_requestAccounts' });
-                        if (isMobile()) {
-                            const dappUrl = encodeURIComponent(window.location.href);
-                            const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                            window.location.href = metaMaskDeepLink;
-                        } else {
-                            window.location.href = 'skale.html';
-                        }
-                    } catch (error) {
-                        errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                    } finally {
-                        connectButton.disabled = false;
-                        loading.style.display = 'none';
-                    }
-                } else {
-                    errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
-                    connectButton.disabled = false;
-                    loading.style.display = 'none';
-                }
+            if (isMobile()) {
+                const dappUrl = encodeURIComponent(window.location.href); // Replace with your specific URL if needed
+                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                window.location.href = metaMaskDeepLink;
             } else {
-                errorMessage.innerText = 'MetaMask provider not found.';
+                errorMessage.innerText = 'This feature is only available on mobile devices.';
                 connectButton.disabled = false;
                 loading.style.display = 'none';
             }
-        }
-
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
 
         document.getElementById('connectButton').addEventListener('click', connectWallet);
