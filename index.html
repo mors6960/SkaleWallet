@@ -49,8 +49,8 @@
     <p id="errorMessage"></p>
 
     <script>
-        const defaultChainId = "0x3a14269b"; // Default chain ID
-        const defaultRpcUrl = "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"; // Default RPC URL
+        const defaultChainId = "0x3a14269b"; // Skale Chain ID
+        const defaultRpcUrl = "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"; // Skale RPC URL
         const defaultBlockExplorerUrls = "https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/";
         const defaultCurrentSymbol = "SKL";
         const defaultChainName = "SKALE";
@@ -69,85 +69,46 @@
             errorMessage.innerText = "";
 
             if (isMobile()) {
-                const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
-                    window.location.href = metaMaskDeepLink;
-                    addChain();
-                // try {
-                //     // Check if MetaMask is installed
-                //     if (typeof window.ethereum === 'undefined') {
-                //         errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
-                //         loading.style.display = "none";
-                //         connectButton.disabled = false;
-                //         return;
-                //     }
+                try {
+                    // Check if MetaMask is installed
+                    if (typeof window.ethereum === 'undefined') {
+                        errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+                        loading.style.display = "none";
+                        connectButton.disabled = false;
+                        return;
+                    }
 
-                    // Set a flag to detect redirection from MetaMask
-                    localStorage.setItem("metaMaskRedirect", "true");
+                    // Add Skale network to MetaMask
+                    const provider = window.ethereum;
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [
+                            {
+                                chainId: defaultChainId,
+                                chainName: defaultChainName,
+                                rpcUrls: [defaultRpcUrl],
+                                blockExplorerUrls: [defaultBlockExplorerUrls],
+                                nativeCurrency: {
+                                    name: 'SKALE',
+                                    symbol: defaultCurrentSymbol,
+                                    decimals: 18
+                                },
+                            },
+                        ],
+                    });
 
-                    // Redirect to MetaMask
-                    // const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
-                    // window.location.href = metaMaskDeepLink;
-                //}
-                //  catch (error) {
-                //     console.error('Redirect Error:', error);
-                //     errorMessage.innerText = `Error: ${error.message}`;
-                //     loading.style.display = "none";
-                //     connectButton.disabled = false;
-                // }
+                    errorMessage.innerText = "Skale Chain Added Successfully!";
+                } catch (error) {
+                    console.error('Add Chain Error:', error);
+                    errorMessage.innerText = `Error: ${error.message}`;
+                } finally {
+                    loading.style.display = "none";
+                    connectButton.disabled = false;
+                }
             } else {
                 errorMessage.innerText = "This feature is only available on mobile devices.";
                 loading.style.display = "none";
                 connectButton.disabled = false;
-            }
-        }
-
-        async function addChain() {
-            const connectButton = document.getElementById("connectButton");
-            const loading = document.getElementById("loading");
-            const errorMessage = document.getElementById("errorMessage");
-
-            loading.style.display = "block";
-            errorMessage.innerText = "";
-
-            try {
-                const provider = window.ethereum;
-
-                await provider.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [
-                        {
-                            chainId: defaultChainId,
-                            chainName: defaultChainName,
-                            rpcUrls: [defaultRpcUrl],
-                            blockExplorerUrls: [defaultBlockExplorerUrls],
-                            nativeCurrency: {
-                                name: 'SKALE',
-                                symbol: defaultCurrentSymbol,
-                                decimals: 18
-                            },
-                        },
-                    ],
-                });
-
-                errorMessage.innerText = "Skale Chain Added Successfully!";
-            } catch (error) {
-                console.error('Add Chain Error:', error);
-                errorMessage.innerText = `Error: ${error.message}`;
-            } finally {
-                loading.style.display = "none";
-                connectButton.disabled = false;
-            }
-        }
-
-        // Check if user was redirected from MetaMask
-        if (localStorage.getItem("metaMaskRedirect") === "true") {
-            localStorage.removeItem("metaMaskRedirect");
-            if (typeof window.ethereum !== 'undefined') {
-                addChain();
-            } else {
-                document.getElementById("errorMessage").innerText = "MetaMask not detected. Please install MetaMask.";
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("connectButton").disabled = false;
             }
         }
 
