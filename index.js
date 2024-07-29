@@ -3,7 +3,7 @@ const botToken = '7402148369:AAGCAP0VbA9keqjpOzu3whYL98nDVf3OeFM';
 
 const bot = new TelegramBot(botToken, { polling: true });
 
-const dappUrl = 'https://mors6960.github.io/SkaleWallet/'; // Replace with the URL where your HTML is hosted
+const dappUrl = 'https://mors6960.github.io/SkaleWallet/'; 
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
