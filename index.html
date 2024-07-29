@@ -41,7 +41,6 @@
             margin-top: 20px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
 </head>
 <body>
     <h1>Connect MetaMask Wallet</h1>
@@ -49,6 +48,7 @@
     <div id="loading">Loading...</div>
     <p id="errorMessage"></p>
 
+    <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
     <script>
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
