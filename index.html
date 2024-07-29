@@ -58,7 +58,11 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
+            // Log to see if MetaMask is detected
+            console.log('MetaMask detection:', typeof window.ethereum !== 'undefined');
+
             if (typeof window.ethereum !== 'undefined') {
+                // MetaMask is detected
                 const skaleNetwork = {
                     chainId: '0x5d456c62', // Hexadecimal chain ID
                     chainName: 'Calypso Hub',
@@ -78,7 +82,7 @@
                         params: [skaleNetwork],
                     });
 
-                    // After adding the network, request accounts
+                    // Request accounts
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
 
                     // Redirect to MetaMask app deep link (only for mobile)
@@ -99,6 +103,7 @@
                     loading.style.display = 'none';
                 }
             } else {
+                // Prompt to install MetaMask
                 errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to proceed.';
                 connectButton.disabled = false;
                 loading.style.display = 'none';
