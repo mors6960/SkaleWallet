@@ -63,10 +63,22 @@
             errorMessage.innerText = '';
 
             if (isMobile()) {
-                // const dappUrl = encodeURIComponent(window.location.href); 
-                // const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                // window.location.href = metaMaskDeepLink;
-                
+                try {
+                    // Simple deep link to MetaMask
+                    const metaMaskDeepLink = 'https://metamask.app.link';
+                    window.location.href = metaMaskDeepLink;
+
+                    // You may want to handle a timeout to redirect if MetaMask is not installed
+                    setTimeout(() => {
+                        errorMessage.innerText = 'MetaMask not detected. Please install MetaMask on your device.';
+                        connectButton.disabled = false;
+                        loading.style.display = 'none';
+                    }, 5000);
+                } catch (error) {
+                    errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+                    connectButton.disabled = false;
+                    loading.style.display = 'none';
+                }
             } else {
                 errorMessage.innerText = 'This feature is only available on mobile devices.';
                 connectButton.disabled = false;
