@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect MetaMask Wallet</title>
+    <title>Wallet Info</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,91 +18,56 @@
         h1 {
             color: #333;
         }
-        #connectButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        #connectButton:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-        #loading {
-            display: none;
-            margin-top: 20px;
-        }
-        #errorMessage {
-            color: red;
+        #walletInfo {
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Connect MetaMask Wallet</h1>
-    <button id="connectButton">Connect MetaMask Wallet</button>
-    <div id="loading">Loading...</div>
-    <p id="errorMessage"></p>
+    <h1>Wallet Information</h1>
+    <div id="walletInfo">
+        <p id="walletAddress">Wallet Address: </p>
+        <p id="walletBalance">Balance: </p>
+    </div>
 
-    <!-- Include MetaMask detect provider script -->
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
     <script>
-        async function connectWallet() {
-            const connectButton = document.getElementById('connectButton');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
+        async function fetchWalletBalance(address) {
+            const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'; // Replace with Skale RPC URL
+            const response = await fetch(skaleRpcUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'eth_getBalance',
+                    params: [address, 'latest'],
+                }),
+            });
+            const result = await response.json();
+            const balance = parseInt(result.result, 16) / 1e18; // Convert from Wei to Ether
+            return balance;
+        }
 
-            connectButton.disabled = true;
-            loading.style.display = 'block';
-            errorMessage.innerText = '';
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
 
-            // Ensure detectEthereumProvider is available
-            if (window.detectEthereumProvider) {
-                const provider = await window.detectEthereumProvider();
-
-                if (provider) {
-                    if (provider.isMetaMask) {
-                        try {
-                            await provider.request({ method: 'eth_requestAccounts' });
-                            if (isMobile()) {
-                                const dappUrl = encodeURIComponent(window.location.href);
-                                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                                window.location.href = metaMaskDeepLink;
-                            } else {
-                                window.location.href = 'skale.html';
-                            }
-                        } catch (error) {
-                            errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                        } finally {
-                            connectButton.disabled = false;
-                            loading.style.display = 'none';
-                        }
-                    } else {
-                        errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
-                        connectButton.disabled = false;
-                        loading.style.display = 'none';
-                    }
-                } else {
-                    errorMessage.innerText = 'MetaMask provider not found.';
-                    connectButton.disabled = false;
-                    loading.style.display = 'none';
-                }
+        async function displayWalletInfo() {
+            const address = getQueryParam('address');
+            if (address) {
+                document.getElementById('walletAddress').innerText = `Wallet Address: ${address}`;
+                const balance = await fetchWalletBalance(address);
+                document.getElementById('walletBalance').innerText = `Balance: ${balance} SKL`;
             } else {
-                errorMessage.innerText = 'MetaMask provider library not loaded.';
-                connectButton.disabled = false;
-                loading.style.display = 'none';
+                document.getElementById('walletAddress').innerText = 'Wallet Address: Not available';
+                document.getElementById('walletBalance').innerText = 'Balance: Not available';
             }
         }
 
-        function isMobile() {
-            return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        }
-
-        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        displayWalletInfo();
     </script>
 </body>
 </html>
