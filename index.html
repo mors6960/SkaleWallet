@@ -27,7 +27,6 @@
   <h1>MetaMask Integration</h1>
   <div id="status">Status: Not Connected</div>
   <button onclick="connect()">Connect</button>
-  <button onclick="addChain()">Add Ethereum Chain</button>
 
   <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
@@ -47,18 +46,53 @@
     const defaultBlockExplorerUrls = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
     const defaultCurrentSymbol = 'SKL'; // Use uppercase to avoid confusion
     const defaultChainName = 'Calypso Hub';
-    var accounts;
 
     async function connect() {
       try {
-        const res = await sdk.connect();
-        provider = sdk.getProvider();
-        console.log('Connected accounts:', res);
-        updateStatus('Connected');
+        if (window.ethereum) {
+          // Request MetaMask connection
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          console.log('Connected accounts:', accounts);
+          updateStatus('Connected');
 
-        accounts = res;
-
-        await checkAndSwitchChain();
+          // Switch to default chain if needed
+          const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+          if (currentChainId !== defaultChainId) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: defaultChainId }],
+              });
+              updateStatus('Switched to Default Chain');
+            } catch (switchError) {
+              if (switchError.code === 4902) {
+                // Add chain if not present
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: defaultChainId,
+                    chainName: defaultChainName,
+                    rpcUrls: [defaultRpcUrl],
+                    blockExplorerUrls: [defaultBlockExplorerUrls],
+                    nativeCurrency: {
+                      name: 'SKL',
+                      symbol: defaultCurrentSymbol,
+                      decimals: 18
+                    },
+                  }],
+                });
+                updateStatus('Chain Added');
+              } else {
+                console.error('Switch Chain Error:', switchError);
+                updateStatus('Failed to Switch Chain');
+              }
+            }
+          } else {
+            updateStatus('Already on Default Chain');
+          }
+        } else {
+          updateStatus('MetaMask not installed');
+        }
       } catch (e) {
         console.error('Connection Error:', e);
         updateStatus('Connection Failed');
@@ -67,63 +101,6 @@
 
     function updateStatus(text) {
       document.getElementById('status').innerText = `Status: ${text}`;
-    }
-
-    async function checkAndSwitchChain() {
-      try {
-        const currentChainId = await provider.request({ method: 'eth_chainId' });
-        if (currentChainId !== defaultChainId) {
-          await switchToDefaultChain();
-        } else {
-          updateStatus('Already on Default Chain');
-        }
-      } catch (e) {
-        console.error('Chain Check Error:', e);
-        updateStatus('Failed to Check Chain');
-      }
-    }
-
-    async function switchToDefaultChain() {
-      try {
-        await provider.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: defaultChainId }],
-        });
-        updateStatus('Switched to Default Chain');
-      } catch (switchError) {
-        if (switchError.code === 4902) {
-          await addChain();
-        } else {
-          console.error('Switch Chain Error:', switchError);
-          updateStatus('Failed to Switch Chain');
-        }
-      }
-    }
-
-    async function addChain() {
-      try {
-        await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: defaultChainId,
-                chainName: defaultChainName,
-                rpcUrls: [defaultRpcUrl],
-                blockExplorerUrls: [defaultBlockExplorerUrls],
-                nativeCurrency: { 
-                  name: 'SKL',
-                  symbol: defaultCurrentSymbol,
-                  decimals: 18
-                },
-              },
-            ],
-        });
-        updateStatus('Chain Added');
-      } catch (e) {
-        console.error('Add Chain Error:', e);
-        updateStatus('Failed to Add Chain');
-      }
-    }
-  </script>
+    }  </script>
 </body>
 </html>
