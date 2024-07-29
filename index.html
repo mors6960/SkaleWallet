@@ -11,6 +11,8 @@
     <script>
         document.getElementById('connectButton').addEventListener('click', async function() {
             if (window.ethereum) {
+                const metaMaskDeepLink = 'https://metamask.app.link';
+                window.location.href = metaMaskDeepLink;
                 const networkDetails = {
                     chainId: '0x3a14269b', // Replace with the chainId of the network you want to add
                     chainName: 'Calypso Hub', // Replace with the network name
