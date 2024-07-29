@@ -28,19 +28,7 @@
   <div id="status">Status: Not Connected</div>
   <button onclick="connect()">Connect</button>
 
-  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
-    const sdk = new MetaMaskSDK.MetaMaskSDK({
-      dappMetadata: {
-        name: "MetaMask Connectivity",
-        url: window.location.host,
-      },
-      logging: {
-        sdk: false,
-      }
-    });
-
-    let provider;
     const defaultChainId = '0x3a14269b'; // Default chain ID (hexadecimal)
     const defaultRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet'; // Default RPC URL
     const defaultBlockExplorerUrls = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
@@ -101,6 +89,7 @@
 
     function updateStatus(text) {
       document.getElementById('status').innerText = `Status: ${text}`;
-    }  </script>
+    }
+  </script>
 </body>
 </html>
