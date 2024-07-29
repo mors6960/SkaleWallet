@@ -33,7 +33,7 @@
   <script>
     const sdk = new MetaMaskSDK.MetaMaskSDK({
       dappMetadata: {
-        name: "METAMASK CONNECTIVITY",
+        name: "MetaMask Connectivity",
         url: window.location.host,
       },
       logging: {
@@ -49,23 +49,18 @@
     const defaultChainName = 'Calypso Hub';
     var accounts;
 
-    //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
         const res = await sdk.connect();
         provider = sdk.getProvider();
-        console.log('request data', res);
-        updateStatus(res);
+        console.log('Connected accounts:', res);
+        updateStatus('Connected');
 
         accounts = res;
 
-        // Check and switch to default chain
-        const currentChainId = await provider.request({ method: 'eth_chainId' });
-        if (currentChainId !== defaultChainId) {
-          await switchToDefaultChain();
-        }
+        await checkAndSwitchChain();
       } catch (e) {
-        console.log('request accounts ERR', e);
+        console.error('Connection Error:', e);
         updateStatus('Connection Failed');
       }
     }
@@ -74,7 +69,20 @@
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
-    // <---------------------Switch to default chain------------------>
+    async function checkAndSwitchChain() {
+      try {
+        const currentChainId = await provider.request({ method: 'eth_chainId' });
+        if (currentChainId !== defaultChainId) {
+          await switchToDefaultChain();
+        } else {
+          updateStatus('Already on Default Chain');
+        }
+      } catch (e) {
+        console.error('Chain Check Error:', e);
+        updateStatus('Failed to Check Chain');
+      }
+    }
+
     async function switchToDefaultChain() {
       try {
         await provider.request({
@@ -83,18 +91,15 @@
         });
         updateStatus('Switched to Default Chain');
       } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
-            // Add the default chain if it's not available in MetaMask
-            await addChain();
+          await addChain();
         } else {
-            console.log('SWITCH ERR', switchError);
-            updateStatus('Switch Chain Failed');
+          console.error('Switch Chain Error:', switchError);
+          updateStatus('Failed to Switch Chain');
         }
       }
     }
 
-    // <-----------------------ADD CHAIN------------------>
     async function addChain() {
       try {
         await provider.request({
@@ -106,17 +111,17 @@
                 rpcUrls: [defaultRpcUrl],
                 blockExplorerUrls: [defaultBlockExplorerUrls],
                 nativeCurrency: { 
-                  name: 'SKL', // Name of the currency
-                  symbol: defaultCurrentSymbol, // Symbol of the currency (uppercase to avoid confusion)
-                  decimals: 18 // Number of decimals
+                  name: 'SKL',
+                  symbol: defaultCurrentSymbol,
+                  decimals: 18
                 },
               },
             ],
         });
         updateStatus('Chain Added');
       } catch (e) {
-        console.log('ADD ERR', e);
-        updateStatus('Add Chain Failed');
+        console.error('Add Chain Error:', e);
+        updateStatus('Failed to Add Chain');
       }
     }
   </script>
