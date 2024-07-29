@@ -1,158 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connect MetaMask Wallet</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f5f5f5;
-    }
-    h1 {
-      color: #333;
-    }
-    #connectButton {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-    #connectButton:disabled {
-      background-color: #aaa;
-      cursor: not-allowed;
-    }
-    #loading {
-      display: none;
-      margin-top: 20px;
-    }
-    #errorMessage {
-      color: red;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Connect MetaMask Wallet</h1>
-  <button id="connectButton">Connect MetaMask Wallet</button>
-  <div id="loading">Loading...</div>
-  <p id="errorMessage"></p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect MetaMask Wallet</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+      }
+      h1 {
+        color: #333;
+      }
+      #connectButton {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      #connectButton:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+      }
+      #loading {
+        display: none;
+        margin-top: 20px;
+      }
+      #errorMessage {
+        color: red;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Connect MetaMask Wallet</h1>
+    <button id="connectButton">Connect MetaMask Wallet</button>
+    <div id="loading">Loading...</div>
+    <p id="errorMessage"></p>
 
-  <script>
-    function isMobile() {
-      return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    }
+    <script>
+      function isMobile() {
+        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      }
 
-    const defaultChainId = "0x3a14269b"; // Default chain ID
-    const defaultRpcUrl = "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"; // Default RPC URL
-    const defaultBlockExplorerUrls = "https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/";
-    const defaultCurrentSymbol = "SKL";
-    const defaultChainName = "SKALE";
+      const defaultChainId = "0x3a14269b"; // Default chain ID
+      const defaultRpcUrl = "https://testnet.skalenodes.com/v1/giant-half-dual-testnet"; // Default RPC URL
+      const defaultBlockExplorerUrls = "https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/";
+      const defaultCurrentSymbol = "SKL";
+      const defaultChainName = "SKALE";
 
-    async function connectWallet() {
-      const connectButton = document.getElementById("connectButton");
-      const loading = document.getElementById("loading");
-      const errorMessage = document.getElementById("errorMessage");
+      async function connectWallet() {
+        const connectButton = document.getElementById("connectButton");
+        const loading = document.getElementById("loading");
+        const errorMessage = document.getElementById("errorMessage");
 
-      connectButton.disabled = true;
-      loading.style.display = "block";
-      errorMessage.innerText = "";
+        connectButton.disabled = true;
+        loading.style.display = "block";
+        errorMessage.innerText = "";
 
-      if (isMobile()) {
-        try {
-          // Redirect to MetaMask app
-          const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.href}`;
-          window.location.href = metaMaskDeepLink;
+        if (isMobile()) {
+          try {
+            // Simple deep link to MetaMask
+            const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.href}`;
+            window.location.href = metaMaskDeepLink;
+            
+            // Set a flag to indicate the user was redirected
+            localStorage.setItem("redirected", "true");
 
-          // Set a flag to indicate the user was redirected
-          localStorage.setItem("redirected", "true");
-
-          // Optionally handle a timeout to show an error message if MetaMask is not installed
-          setTimeout(() => {
-            if (localStorage.getItem("redirected") === "true") {
-              errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
-              connectButton.disabled = false;
-              loading.style.display = "none";
-            }
-          }, 5000);
-        } catch (error) {
-          errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+            // Optionally handle a timeout to show an error message if MetaMask is not installed
+            setTimeout(() => {
+              if (localStorage.getItem("redirected") === "true") {
+                errorMessage.innerText = "MetaMask not detected. Please install MetaMask on your device.";
+                connectButton.disabled = false;
+                loading.style.display = "none";
+              }
+            }, 5000);
+          } catch (error) {
+            errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+            connectButton.disabled = false;
+            loading.style.display = "none";
+          }
+        } else {
+          errorMessage.innerText = "This feature is only available on mobile devices.";
           connectButton.disabled = false;
           loading.style.display = "none";
         }
-      } else {
-        errorMessage.innerText = "This feature is only available on mobile devices.";
-        connectButton.disabled = false;
-        loading.style.display = "none";
       }
-    }
 
-    async function addChain() {
-      const loading = document.getElementById("loading");
-      const errorMessage = document.getElementById("errorMessage");
-      
-      loading.style.display = "block";
-      errorMessage.innerText = "";
-
-      try {
-        // Wait for MetaMask to be available
-        if (typeof window.ethereum === 'undefined') {
-          errorMessage.innerText = "MetaMask not available. Please install MetaMask.";
-          loading.style.display = "none";
-          return;
-        }
-
-        const provider = window.ethereum;
+      async function addChain() {
+        const loading = document.getElementById("loading");
+        const errorMessage = document.getElementById("errorMessage");
         
-        await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
-              chainId: defaultChainId,
-              chainName: defaultChainName,
-              rpcUrls: [defaultRpcUrl],
-              blockExplorerUrls: [defaultBlockExplorerUrls],
-              nativeCurrency: {
-                name: 'SKALE',
-                symbol: defaultCurrentSymbol,
-                decimals: 18
+        loading.style.display = "block";
+        errorMessage.innerText = "";
+
+        try {
+          // Wait for MetaMask to be available
+          if (typeof window.ethereum === 'undefined') {
+            errorMessage.innerText = "MetaMask not available. Please install MetaMask.";
+            loading.style.display = "none";
+            return;
+          }
+
+          const provider = window.ethereum;
+          
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: defaultChainId,
+                chainName: defaultChainName,
+                rpcUrls: [defaultRpcUrl],
+                blockExplorerUrls: [defaultBlockExplorerUrls],
+                nativeCurrency: {
+                  name: 'SKALE',
+                  symbol: defaultCurrentSymbol,
+                  decimals: 18
+                },
               },
-            },
-          ],
-        });
-        
-        errorMessage.innerText = "Skale Chain Added Successfully!";
-        loading.style.display = "none";
-      } catch (e) {
-        console.error('Add Chain Error:', e);
-        errorMessage.innerText = `Add Chain Error: ${e.message}`;
-        loading.style.display = "none";
+            ],
+          });
+          
+          errorMessage.innerText = "Skale Chain Added Successfully!";
+          loading.style.display = "none";
+        } catch (e) {
+          console.error('Add Chain Error:', e);
+          errorMessage.innerText = `Add Chain Error: ${e.message}`;
+          loading.style.display = "none";
+        }
       }
-    }
 
-    function handleConnection() {
-      connectWallet();
-    }
+      // Function to handle redirection to MetaMask and then to addChain
+      function handleConnection() {
+        connectWallet();
+      }
 
-    document
-      .getElementById("connectButton")
-      .addEventListener("click", handleConnection);
+      document
+        .getElementById("connectButton")
+        .addEventListener("click", handleConnection);
 
-    // Check if user is back from MetaMask
-    if (localStorage.getItem("redirected") === "true") {
-      localStorage.removeItem("redirected");
-      addChain();
-    }
-  </script>
-</body>
+      // Check if user is back from MetaMask
+      if (localStorage.getItem("redirected") === "true") {
+        localStorage.removeItem("redirected");
+        addChain();
+      }
+    </script>
+  </body>
 </html>
