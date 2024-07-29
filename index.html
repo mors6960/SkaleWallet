@@ -1,95 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetaMask Integration</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    #status {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect MetaMask</title>
 </head>
 <body>
-  <h1>MetaMask Integration</h1>
-  <div id="status">Status: Not Connected</div>
-  <button onclick="connect()">Connect</button>
+    <button id="connectButton">Connect MetaMask</button>
 
-  <script>
-    const defaultChainId = '0x3a14269b'; // Default chain ID (hexadecimal)
-    const defaultRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet'; // Default RPC URL
-    const defaultBlockExplorerUrls = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
-    const defaultCurrentSymbol = 'SKL'; // Use uppercase to avoid confusion
-    const defaultChainName = 'Calypso Hub';
+    <script>
+        document.getElementById('connectButton').addEventListener('click', function() {
+            // Define the network details
+            const networkDetails = {
+                chainId: '0x1', // Replace with the chainId of the network you want to add
+                chainName: 'Ethereum Mainnet', // Replace with the network name
+                rpcUrls: ['https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'], // Replace with the RPC URL
+                nativeCurrency: {
+                    name: 'Ether',
+                    symbol: 'ETH',
+                    decimals: 18
+                },
+                blockExplorerUrls: ['https://etherscan.io'] // Replace with the block explorer URL
+            };
 
-    async function connect() {
-      try {
-        if (window.ethereum) {
-          // Request MetaMask connection
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          console.log('Connected accounts:', accounts);
-          updateStatus('Connected');
+            // MetaMask mobile deep link
+            const metaMaskDeepLink = `metamask://wallet/add-network?chainId=${networkDetails.chainId}&chainName=${encodeURIComponent(networkDetails.chainName)}&rpcUrls=${encodeURIComponent(networkDetails.rpcUrls[0])}&nativeCurrency=${encodeURIComponent(JSON.stringify(networkDetails.nativeCurrency))}&blockExplorerUrls=${encodeURIComponent(networkDetails.blockExplorerUrls[0])}`;
 
-          // Switch to default chain if needed
-          const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-          if (currentChainId !== defaultChainId) {
-            try {
-              await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: defaultChainId }],
-              });
-              updateStatus('Switched to Default Chain');
-            } catch (switchError) {
-              if (switchError.code === 4902) {
-                // Add chain if not present
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: defaultChainId,
-                    chainName: defaultChainName,
-                    rpcUrls: [defaultRpcUrl],
-                    blockExplorerUrls: [defaultBlockExplorerUrls],
-                    nativeCurrency: {
-                      name: 'SKL',
-                      symbol: defaultCurrentSymbol,
-                      decimals: 18
-                    },
-                  }],
-                });
-                updateStatus('Chain Added');
-              } else {
-                console.error('Switch Chain Error:', switchError);
-                updateStatus('Failed to Switch Chain');
-              }
-            }
-          } else {
-            updateStatus('Already on Default Chain');
-          }
-        } else {
-          updateStatus('MetaMask not installed');
-        }
-      } catch (e) {
-        console.error('Connection Error:', e);
-        updateStatus('Connection Failed');
-      }
-    }
+            // Attempt to open MetaMask mobile with deep link
+            window.location.href = metaMaskDeepLink;
 
-    function updateStatus(text) {
-      document.getElementById('status').innerText = `Status: ${text}`;
-    }
-  </script>
+            // Optionally, add a fallback URL for desktop or unsupported devices
+            setTimeout(() => {
+                window.location.href = 'https://metamask.app.link/';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
