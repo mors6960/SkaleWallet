@@ -48,8 +48,6 @@
     <div id="loading">Loading...</div>
     <p id="errorMessage"></p>
 
-    <!-- Include MetaMask detect provider script -->
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/metamask-detect-provider.min.js"></script>
     <script>
         async function connectWallet() {
             const connectButton = document.getElementById('connectButton');
@@ -60,41 +58,32 @@
             loading.style.display = 'block';
             errorMessage.innerText = '';
 
-            // Ensure detectEthereumProvider is available
-            const detectEthereumProvider = window.detectEthereumProvider;
+            if (window.ethereum) {
+                const provider = window.ethereum;
 
-            if (detectEthereumProvider) {
-                const provider = await detectEthereumProvider();
-
-                if (provider) {
-                    if (provider.isMetaMask) {
-                        try {
-                            await provider.request({ method: 'eth_requestAccounts' });
-                            if (isMobile()) {
-                                const dappUrl = encodeURIComponent(window.location.href);
-                                const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
-                                window.location.href = metaMaskDeepLink;
-                            } else {
-                                window.location.href = 'skale.html';
-                            }
-                        } catch (error) {
-                            errorMessage.innerText = `Error connecting wallet: ${error.message}`;
-                        } finally {
-                            connectButton.disabled = false;
-                            loading.style.display = 'none';
+                if (provider.isMetaMask) {
+                    try {
+                        await provider.request({ method: 'eth_requestAccounts' });
+                        if (isMobile()) {
+                            const dappUrl = encodeURIComponent(window.location.href);
+                            const metaMaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+                            window.location.href = metaMaskDeepLink;
+                        } else {
+                            window.location.href = 'skale.html';
                         }
-                    } else {
-                        errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
+                    } catch (error) {
+                        errorMessage.innerText = `Error connecting wallet: ${error.message}`;
+                    } finally {
                         connectButton.disabled = false;
                         loading.style.display = 'none';
                     }
                 } else {
-                    errorMessage.innerText = 'MetaMask provider not found.';
+                    errorMessage.innerText = 'MetaMask is not installed. Please install MetaMask to continue.';
                     connectButton.disabled = false;
                     loading.style.display = 'none';
                 }
             } else {
-                errorMessage.innerText = 'MetaMask provider library not loaded.';
+                errorMessage.innerText = 'MetaMask provider not found.';
                 connectButton.disabled = false;
                 loading.style.display = 'none';
             }
