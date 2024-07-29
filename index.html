@@ -9,30 +9,34 @@
     <button id="connectButton">Connect MetaMask</button>
 
     <script>
-        document.getElementById('connectButton').addEventListener('click', function() {
-            // Define the network details
-            const networkDetails = {
-                chainId: '0x1', // Replace with the chainId of the network you want to add
-                chainName: 'Ethereum Mainnet', // Replace with the network name
-                rpcUrls: ['https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'], // Replace with the RPC URL
-                nativeCurrency: {
-                    name: 'Ether',
-                    symbol: 'ETH',
-                    decimals: 18
-                },
-                blockExplorerUrls: ['https://etherscan.io'] // Replace with the block explorer URL
-            };
+        document.getElementById('connectButton').addEventListener('click', async function() {
+            if (window.ethereum) {
+                const networkDetails = {
+                    chainId: '0x3a14269b', // Replace with the chainId of the network you want to add
+                    chainName: 'Calypso Hub', // Replace with the network name
+                    rpcUrls: ['https://testnet.skalenodes.com/v1/giant-half-dual-testnet'], // Replace with the RPC URL
+                    nativeCurrency: {
+                        name: 'SKALE',
+                        symbol: 'SKL',
+                        decimals: 18
+                    },
+                    blockExplorerUrls: ['https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/'] 
+                };
 
-            // MetaMask mobile deep link
-            const metaMaskDeepLink = `metamask://wallet/add-network?chainId=${networkDetails.chainId}&chainName=${encodeURIComponent(networkDetails.chainName)}&rpcUrls=${encodeURIComponent(networkDetails.rpcUrls[0])}&nativeCurrency=${encodeURIComponent(JSON.stringify(networkDetails.nativeCurrency))}&blockExplorerUrls=${encodeURIComponent(networkDetails.blockExplorerUrls[0])}`;
-
-            // Attempt to open MetaMask mobile with deep link
-            window.location.href = metaMaskDeepLink;
-
-            // Optionally, add a fallback URL for desktop or unsupported devices
-            setTimeout(() => {
-                window.location.href = 'https://metamask.app.link/';
-            }, 2000);
+                try {
+                    // Request to switch to the specified network
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [networkDetails],
+                    });
+                } catch (error) {
+                    console.error('Failed to add network:', error);
+                }
+            } else {
+                console.log('MetaMask is not installed');
+                // Optionally, redirect to MetaMask download page
+                window.location.href = 'https://metamask.io/download.html';
+            }
         });
     </script>
 </body>
