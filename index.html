@@ -78,31 +78,15 @@
                         return;
                     }
 
-                    const provider = window.ethereum;
+                    // Set a flag to detect redirection from MetaMask
+                    localStorage.setItem("metaMaskRedirect", "true");
 
-                    // Request MetaMask to add the Skale chain
-                    await provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [
-                            {
-                                chainId: defaultChainId,
-                                chainName: defaultChainName,
-                                rpcUrls: [defaultRpcUrl],
-                                blockExplorerUrls: [defaultBlockExplorerUrls],
-                                nativeCurrency: {
-                                    name: 'SKALE',
-                                    symbol: defaultCurrentSymbol,
-                                    decimals: 18
-                                },
-                            },
-                        ],
-                    });
-
-                    errorMessage.innerText = "Skale Chain Added Successfully!";
+                    // Redirect to MetaMask
+                    const metaMaskDeepLink = `https://metamask.app.link/dapp/${window.location.host}`;
+                    window.location.href = metaMaskDeepLink;
                 } catch (error) {
-                    console.error('Add Chain Error:', error);
+                    console.error('Redirect Error:', error);
                     errorMessage.innerText = `Error: ${error.message}`;
-                } finally {
                     loading.style.display = "none";
                     connectButton.disabled = false;
                 }
@@ -113,12 +97,57 @@
             }
         }
 
-        document.getElementById("connectButton").addEventListener("click", connectWallet);
+        async function addChain() {
+            const connectButton = document.getElementById("connectButton");
+            const loading = document.getElementById("loading");
+            const errorMessage = document.getElementById("errorMessage");
 
-        // Optional: check if MetaMask redirected back from the app
-        if (window.location.search.includes('metaMaskRedirect=true')) {
-            connectWallet();
+            loading.style.display = "block";
+            errorMessage.innerText = "";
+
+            try {
+                const provider = window.ethereum;
+
+                await provider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [
+                        {
+                            chainId: defaultChainId,
+                            chainName: defaultChainName,
+                            rpcUrls: [defaultRpcUrl],
+                            blockExplorerUrls: [defaultBlockExplorerUrls],
+                            nativeCurrency: {
+                                name: 'SKALE',
+                                symbol: defaultCurrentSymbol,
+                                decimals: 18
+                            },
+                        },
+                    ],
+                });
+
+                errorMessage.innerText = "Skale Chain Added Successfully!";
+            } catch (error) {
+                console.error('Add Chain Error:', error);
+                errorMessage.innerText = `Error: ${error.message}`;
+            } finally {
+                loading.style.display = "none";
+                connectButton.disabled = false;
+            }
         }
+
+        // Check if user was redirected from MetaMask
+        if (localStorage.getItem("metaMaskRedirect") === "true") {
+            localStorage.removeItem("metaMaskRedirect");
+            if (typeof window.ethereum !== 'undefined') {
+                addChain();
+            } else {
+                document.getElementById("errorMessage").innerText = "MetaMask not detected. Please install MetaMask.";
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("connectButton").disabled = false;
+            }
+        }
+
+        document.getElementById("connectButton").addEventListener("click", connectWallet);
     </script>
 </body>
 </html>
