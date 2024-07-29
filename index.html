@@ -27,14 +27,13 @@
   <h1>MetaMask Integration</h1>
   <div id="status">Status: Not Connected</div>
   <button onclick="connect()">Connect</button>
-  <button onclick="addChain()">Add Skale Chain</button>
+  <button onclick="addChain()">Add Ethereum Chain</button>
 
   <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
-    // Initialize the MetaMask SDK
-    const sdk = new MetaMaskSDK({
+    const sdk = new MetaMaskSDK.MetaMaskSDK({
       dappMetadata: {
-        name: "SKALE CONNECTIVITY",
+        name: "METAMASK CONNECTIVITY",
         url: window.location.host,
       },
       logging: {
@@ -43,33 +42,30 @@
     });
 
     let provider;
-    const skaleChainId = '0x5d456c62'; // Skale chain ID (hexadecimal)
-    const skaleRpcUrl = 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague'; // Skale RPC URL
-    const skaleBlockExplorerUrls = 'https://honorable-steel-rasalhague.explorer.mainnet.skalenodes.com/';
-    const skaleCurrentSymbol = 'SKL'; // Skale native currency symbol
-    const skaleChainName = 'Calypso Hub'; // Skale chain name
+    const defaultChainId = '0x3a14269b'; // Default chain ID (hexadecimal)
+    const defaultRpcUrl = 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet'; // Default RPC URL
+    const defaultBlockExplorerUrls = 'https://giant-half-dual-testnet.explorer.testnet.skalenodes.com/';
+    const defaultCurrentSymbol = 'SKL'; // Use uppercase to avoid confusion
+    const defaultChainName = 'Calypso Hub';
     var accounts;
 
+    //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
+        const res = await sdk.connect();
         provider = sdk.getProvider();
+        console.log('request data', res);
+        updateStatus(res);
 
-        if (!provider) {
-          throw new Error('MetaMask provider is not available.');
-        }
+        accounts = res;
 
-        // Request accounts from MetaMask
-        const accountsResponse = await provider.request({ method: 'eth_requestAccounts' });
-        accounts = accountsResponse;
-        updateStatus('Connected');
-
-        // Check and switch to Skale chain
+        // Check and switch to default chain
         const currentChainId = await provider.request({ method: 'eth_chainId' });
-        if (currentChainId !== skaleChainId) {
-          await switchToSkaleChain();
+        if (currentChainId !== defaultChainId) {
+          await switchToDefaultChain();
         }
       } catch (e) {
-        console.error('Connection Error:', e);
+        console.log('request accounts ERR', e);
         updateStatus('Connection Failed');
       }
     }
@@ -78,49 +74,48 @@
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
-    async function switchToSkaleChain() {
+    // <---------------------Switch to default chain------------------>
+    async function switchToDefaultChain() {
       try {
         await provider.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: skaleChainId }],
+            params: [{ chainId: defaultChainId }],
         });
-        updateStatus('Switched to Skale Chain');
+        updateStatus('Switched to Default Chain');
       } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
-            // Add the Skale chain if it's not available in MetaMask
+            // Add the default chain if it's not available in MetaMask
             await addChain();
         } else {
-            console.error('Switch Chain Error:', switchError);
+            console.log('SWITCH ERR', switchError);
             updateStatus('Switch Chain Failed');
         }
       }
     }
 
+    // <-----------------------ADD CHAIN------------------>
     async function addChain() {
       try {
-        if (!provider) {
-          throw new Error('MetaMask provider is not available.');
-        }
-        
         await provider.request({
             method: 'wallet_addEthereumChain',
             params: [
               {
-                chainId: skaleChainId,
-                chainName: skaleChainName,
-                rpcUrls: [skaleRpcUrl],
-                blockExplorerUrls: [skaleBlockExplorerUrls],
+                chainId: defaultChainId,
+                chainName: defaultChainName,
+                rpcUrls: [defaultRpcUrl],
+                blockExplorerUrls: [defaultBlockExplorerUrls],
                 nativeCurrency: { 
-                  name: 'SKALE',
-                  symbol: skaleCurrentSymbol,
-                  decimals: 18
+                  name: 'SKL', // Name of the currency
+                  symbol: defaultCurrentSymbol, // Symbol of the currency (uppercase to avoid confusion)
+                  decimals: 18 // Number of decimals
                 },
               },
             ],
         });
-        updateStatus('Skale Chain Added');
+        updateStatus('Chain Added');
       } catch (e) {
-        console.error('Add Chain Error:', e);
+        console.log('ADD ERR', e);
         updateStatus('Add Chain Failed');
       }
     }
