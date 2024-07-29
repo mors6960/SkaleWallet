@@ -51,7 +51,7 @@
     <script>
         async function deepLinkToMetaMask() {
             if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                window.location.href = 'metamask://';
+                window.location.href = 'https://metamask.app.link';
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
